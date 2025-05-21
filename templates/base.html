@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWS Developer Associate Study App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header>
+        <h1>AWS Developer Associate Study Quiz</h1>
+        <nav>
+            <a href="{{ url_for('index') }}">Home</a>
+            <a href="{{ url_for('quiz') }}">Take Quiz</a>
+            <a href="{{ url_for('add_question') }}">Add Question</a>
+            <a href="{{ url_for('manage_questions') }}">Manage Questions</a>
+        </nav>
+    </header>
+    
+    <main>
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="flash-messages">
+              {% for message in messages %}
+                <div class="flash-message">{{ message }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+        
+        {% block content %}{% endblock %}
+    </main>
+    
+    <footer>
+        <p>AWS Developer Associate Study App</p>
+    </footer>
+
+    <script>
+        // Progress tracking functions
+        const PROGRESS_KEY = 'aws_quiz_progress';
+        
+        // Get completed questions from local storage
+        function getCompletedQuestions() {
+            const progress = localStorage.getItem(PROGRESS_KEY);
+            return progress ? JSON.parse(progress) : {};
+        }
+        
+        // Save a question as completed
+        function markQuestionCompleted(questionId, isCorrect) {
+            const progress = getCompletedQuestions();
+            progress[questionId] = {
+                completed: true,
+                correct: isCorrect,
+                timestamp: new Date().toISOString()
+            };
+            localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+            updateProgressUI();
+        }
+        
+        // Check if a question is completed
+        function isQuestionCompleted(questionId) {
+            const progress = getCompletedQuestions();
+            return progress[questionId] && progress[questionId].completed;
+        }
+        
+        // Reset all progress
+        function resetProgress() {
+            if (confirm('Are you sure you want to reset your progress? This cannot be undone.')) {
+                localStorage.removeItem(PROGRESS_KEY);
+                updateProgressUI();
+                // Reload the page if we're on the quiz page
+                if (window.location.pathname.includes('/quiz')) {
+                    window.location.reload();
+                }
+            }
+        }
+        
+        // Update any progress indicators on the page
+        function updateProgressUI() {
+            const progress = getCompletedQuestions();
+            const progressCount = Object.keys(progress).length;
+            
+            // Update progress counter if it exists
+            const counterElement = document.getElementById('progress-counter');
+            if (counterElement) {
+                fetch('/question_stats')
+                    .then(response => response.json())
+                    .then(data => {
+                        const total = data.total;
+                        counterElement.textContent = `${progressCount} / ${total} completed`;
+                        
+                        // Update progress bar if it exists
+                        const progressBar = document.getElementById('progress-bar-fill');
+                        if (progressBar && total > 0) {
+                            const percentage = (progressCount / total) * 100;
+                            progressBar.style.width = `${percentage}%`;
+                        }
+                    });
+            }
+            
+            // Update question cards if they exist
+            document.querySelectorAll('.question-card').forEach(card => {
+                const questionId = card.dataset.questionId;
+                if (questionId && isQuestionCompleted(questionId)) {
+                    card.classList.add('completed');
+                    const status = progress[questionId].correct ? 'correct' : 'incorrect';
+                    card.classList.add(status);
+                    
+                    // Add completed indicator if it doesn't exist
+                    if (!card.querySelector('.completion-status')) {
+                        const statusIndicator = document.createElement('div');
+                        statusIndicator.className = `completion-status ${status}`;
+                        statusIndicator.textContent = progress[questionId].correct ? 'Answered Correctly' : 'Answered Incorrectly';
+                        card.querySelector('h3').appendChild(statusIndicator);
+                    }
+                }
+            });
+        }
+
+        // Markdown preview functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const markdownEditors = document.querySelectorAll('.markdown-editor');
+            
+            markdownEditors.forEach(editor => {
+                const previewContainer = editor.closest('.markdown-field').querySelector('.markdown-preview');
+                
+                // Update preview on input
+                editor.addEventListener('input', function() {
+                    updateMarkdownPreview(editor, previewContainer);
+                });
+                
+                // Initialize preview
+                updateMarkdownPreview(editor, previewContainer);
+            });
+            
+            function updateMarkdownPreview(editor, previewContainer) {
+                const markdownText = editor.value;
+                
+                // Make AJAX request to get HTML preview
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', '{{ url_for("markdown_preview") }}', true);
+                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === 4 && xhr.status === 200) {
+                        previewContainer.innerHTML = xhr.responseText;
+                    }
+                };
+                
+                xhr.send('text=' + encodeURIComponent(markdownText));
+            }
+            
+            // Initialize progress UI
+            updateProgressUI();
+        });
+    </script>
+</body>
+</html>

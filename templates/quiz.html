@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="quiz-container">
+    <h2>AWS Developer Associate Quiz</h2>
+    
+    <div class="progress-section">
+        <h3>Your Progress</h3>
+        <div class="progress-bar">
+            <div class="progress-bar-fill" id="progress-bar-fill"></div>
+        </div>
+        <div class="progress-counter" id="progress-counter">Loading...</div>
+        <button class="button reset-button" onclick="resetProgress()">Reset Progress</button>
+    </div>
+    
+    {% for question in questions %}
+    <div class="question-card" id="question-{{ question.id }}" data-question-id="{{ question.id }}">
+        <h3>Question {{ loop.index }}</h3>
+        <div class="question-text">{{ question.question_html|safe }}</div>
+        
+        <form action="{{ url_for('check_answer') }}" method="post" class="answer-form">
+            <input type="hidden" name="question_id" value="{{ question.id }}">
+            
+            <div class="options">
+                {% for option in question.options %}
+                <div class="option">
+                    <input type="radio" name="answer" id="q{{ question.id }}-option{{ loop.index }}" value="{{ option }}" required>
+                    <label for="q{{ question.id }}-option{{ loop.index }}">{{ option }}</label>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <button type="submit" class="button">Submit Answer</button>
+        </form>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+    // Make forms remember the completion status
+    document.querySelectorAll('.answer-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const questionId = this.querySelector('input[name="question_id"]').value;
+            const selectedAnswer = this.querySelector('input[name="answer"]:checked').value;
+            
+            // We'll update the completion status when we get to the result page
+            localStorage.setItem('last_submitted_question', questionId);
+            localStorage.setItem('last_selected_answer', selectedAnswer);
+        });
+    });
+</script>
+{% endblock %}
