@@ -143,4 +143,5 @@ docker-compose up -d --build
 
 ---
 
-Happy studying for your AWS Developer Associate exam!
+### Demo
+![Demo of app](img/AWS_Exam_App.png)
