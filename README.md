@@ -15,6 +15,28 @@ A modern, containerized web application for studying AWS Developer Associate exa
 - 📱 **Mobile Responsive**: Works seamlessly on desktop and mobile devices
 - 🐳 **Containerized**: Easy deployment with Docker
 
+## 📸 Demo
+
+### Login Interface
+Clean and simple authentication with predefined user accounts:
+
+![Login Page](img/Log_In.png)
+
+### Home Dashboard
+Welcome page with progress tracking and quiz navigation:
+
+![Home Dashboard](img/AWS_Start.png)
+
+### Quiz Experience
+Focused single-question interface with progress indicator:
+
+![Quiz Question](img/Q_Page.png)
+
+### Question Management
+Admin interface for managing the question database:
+
+![Manage Questions](img/Manage_Page.png)
+
 ## Table of Contents
 
 1. [Prerequisites](#prerequisites)
@@ -116,6 +138,11 @@ aws-study-app/
 ├── progress.json              # User progress tracking
 ├── questions.json             # Question database
 ├── requirements.txt           # Python dependencies
+├── img/                       # Demo screenshots
+│   ├── AWS_Start.png          # Home dashboard
+│   ├── Log_In.png             # Login interface
+│   ├── Manage_Page.png        # Question management
+│   └── Q_Page.png             # Quiz question page
 ├── static/                    # CSS and static assets
 │   └── css/
 │       └── style.css          # Application styling with dark theme
