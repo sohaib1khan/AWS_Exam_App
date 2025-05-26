@@ -8,13 +8,22 @@
 </head>
 <body>
     <header>
-        <h1>AWS Developer Associate Study Quiz</h1>
-        <nav>
-            <a href="{{ url_for('index') }}">Home</a>
-            <a href="{{ url_for('quiz') }}">Take Quiz</a>
-            <a href="{{ url_for('add_question') }}">Add Question</a>
-            <a href="{{ url_for('manage_questions') }}">Manage Questions</a>
-        </nav>
+        <div class="header-content">
+            <h1>AWS Developer Associate Study Quiz</h1>
+            <nav>
+                {% if session.username %}
+                    <a href="{{ url_for('index') }}">Home</a>
+                    <a href="{{ url_for('quiz') }}">Take Quiz</a>
+                    <a href="{{ url_for('add_question') }}">Add Question</a>
+                    <a href="{{ url_for('manage_questions') }}">Manage Questions</a>
+                    <span style="color: #ff9900; margin-left: 15px;">Welcome, {{ session.username }}!</span>
+                    <a href="{{ url_for('logout') }}" style="margin-left: 15px;">Logout</a>
+                {% endif %}
+            </nav>
+        </div>
+        <button class="theme-toggle" onclick="toggleTheme()" id="theme-toggle">
+            🌙 Dark
+        </button>
     </header>
     
     <main>
@@ -36,82 +45,107 @@
     </footer>
 
     <script>
-        // Progress tracking functions
-        const PROGRESS_KEY = 'aws_quiz_progress';
+        // Theme Management
+        const THEME_KEY = 'aws_quiz_theme';
         
-        // Get completed questions from local storage
-        function getCompletedQuestions() {
-            const progress = localStorage.getItem(PROGRESS_KEY);
-            return progress ? JSON.parse(progress) : {};
+        function initializeTheme() {
+            const savedTheme = localStorage.getItem(THEME_KEY) || 'light';
+            setTheme(savedTheme);
         }
         
-        // Save a question as completed
-        function markQuestionCompleted(questionId, isCorrect) {
-            const progress = getCompletedQuestions();
-            progress[questionId] = {
-                completed: true,
-                correct: isCorrect,
-                timestamp: new Date().toISOString()
-            };
-            localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
-            updateProgressUI();
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            const toggleButton = document.getElementById('theme-toggle');
+            
+            if (theme === 'dark') {
+                toggleButton.textContent = '☀️ Light';
+            } else {
+                toggleButton.textContent = '🌙 Dark';
+            }
+            
+            localStorage.setItem(THEME_KEY, theme);
         }
         
-        // Check if a question is completed
-        function isQuestionCompleted(questionId) {
-            const progress = getCompletedQuestions();
-            return progress[questionId] && progress[questionId].completed;
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            setTheme(newTheme);
         }
-        
-        // Reset all progress
+
+        // Progress tracking functions (updated to work with server-side authentication)
         function resetProgress() {
             if (confirm('Are you sure you want to reset your progress? This cannot be undone.')) {
-                localStorage.removeItem(PROGRESS_KEY);
-                updateProgressUI();
-                // Reload the page if we're on the quiz page
-                if (window.location.pathname.includes('/quiz')) {
-                    window.location.reload();
-                }
+                // Note: With server-side auth, you might want to add a backend endpoint for this
+                fetch('/reset_progress', { method: 'POST' })
+                    .then(response => {
+                        if (response.ok) {
+                            updateProgressUI();
+                            if (window.location.pathname.includes('/quiz')) {
+                                window.location.reload();
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error resetting progress:', error);
+                        // Fallback to page reload
+                        window.location.reload();
+                    });
             }
         }
         
-        // Update any progress indicators on the page
+        // Update progress UI for server-side auth
         function updateProgressUI() {
-            const progress = getCompletedQuestions();
-            const progressCount = Object.keys(progress).length;
-            
             // Update progress counter if it exists
             const counterElement = document.getElementById('progress-counter');
             if (counterElement) {
+                counterElement.textContent = 'Loading progress...';
+                
                 fetch('/question_stats')
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
                     .then(data => {
                         const total = data.total;
-                        counterElement.textContent = `${progressCount} / ${total} completed`;
+                        const completed = data.completed || 0;
+                        counterElement.textContent = `${completed} / ${total} completed`;
                         
                         // Update progress bar if it exists
                         const progressBar = document.getElementById('progress-bar-fill');
                         if (progressBar && total > 0) {
-                            const percentage = (progressCount / total) * 100;
+                            const percentage = (completed / total) * 100;
                             progressBar.style.width = `${percentage}%`;
                         }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching question stats:', error);
+                        counterElement.textContent = 'Error loading progress';
                     });
             }
             
-            // Update question cards if they exist
+            // Update question cards if they exist (server-side completion status)
             document.querySelectorAll('.question-card').forEach(card => {
                 const questionId = card.dataset.questionId;
-                if (questionId && isQuestionCompleted(questionId)) {
+                
+                // Check if this card has completion data from server
+                if (card.dataset.completed === 'true') {
                     card.classList.add('completed');
-                    const status = progress[questionId].correct ? 'correct' : 'incorrect';
+                    const isCorrect = card.dataset.userCorrect === 'true';
+                    const status = isCorrect ? 'correct' : 'incorrect';
                     card.classList.add(status);
                     
                     // Add completed indicator if it doesn't exist
                     if (!card.querySelector('.completion-status')) {
                         const statusIndicator = document.createElement('div');
                         statusIndicator.className = `completion-status ${status}`;
-                        statusIndicator.textContent = progress[questionId].correct ? 'Answered Correctly' : 'Answered Incorrectly';
-                        card.querySelector('h3').appendChild(statusIndicator);
+                        statusIndicator.textContent = isCorrect ? 'Answered Correctly' : 'Answered Incorrectly';
+                        
+                        const heading = card.querySelector('h3');
+                        if (heading) {
+                            heading.appendChild(statusIndicator);
+                        }
                     }
                 }
             });
@@ -119,10 +153,14 @@
 
         // Markdown preview functionality
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialize theme first
+            initializeTheme();
+            
             const markdownEditors = document.querySelectorAll('.markdown-editor');
             
             markdownEditors.forEach(editor => {
-                const previewContainer = editor.closest('.markdown-field').querySelector('.markdown-preview');
+                const previewContainer = editor.closest('.markdown-field')?.querySelector('.markdown-preview');
+                if (!previewContainer) return;
                 
                 // Update preview on input
                 editor.addEventListener('input', function() {

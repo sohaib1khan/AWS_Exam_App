@@ -4,18 +4,37 @@
 <div class="quiz-container">
     <h2>AWS Developer Associate Quiz</h2>
     
+    <!-- Progress Section -->
     <div class="progress-section">
-        <h3>Your Progress</h3>
-        <div class="progress-bar">
-            <div class="progress-bar-fill" id="progress-bar-fill"></div>
+        <h3>Quiz Progress</h3>
+        <div class="quiz-progress-info">
+            <span class="question-counter">Question {{ quiz_info.current_number }} of {{ quiz_info.total_questions }}</span>
+            <span class="progress-percentage">{{ "%.0f"|format(quiz_info.progress_percentage) }}% Complete</span>
         </div>
-        <div class="progress-counter" id="progress-counter">Loading...</div>
-        <button class="button reset-button" onclick="resetProgress()">Reset Progress</button>
+        <div class="progress-bar">
+            <div class="progress-bar-fill" style="width: {{ quiz_info.progress_percentage }}%"></div>
+        </div>
     </div>
     
-    {% for question in questions %}
-    <div class="question-card" id="question-{{ question.id }}" data-question-id="{{ question.id }}">
-        <h3>Question {{ loop.index }}</h3>
+    <!-- Single Question Display -->
+    <div class="question-card" id="question-{{ question.id }}" 
+         data-question-id="{{ question.id }}" 
+         data-completed="{{ question.completed|lower }}" 
+         data-user-correct="{{ question.user_correct|lower }}">
+        
+        <div class="question-header">
+            <h3>Question {{ quiz_info.current_number }}</h3>
+            {% if question.completed %}
+                <div class="completion-indicator {{ 'correct' if question.user_correct else 'incorrect' }}">
+                    {% if question.user_correct %}
+                        ✓ Previously Answered Correctly
+                    {% else %}
+                        ✗ Previously Answered Incorrectly
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+        
         <div class="question-text">{{ question.question_html|safe }}</div>
         
         <form action="{{ url_for('check_answer') }}" method="post" class="answer-form">
@@ -30,23 +49,213 @@
                 {% endfor %}
             </div>
             
-            <button type="submit" class="button">Submit Answer</button>
+            <div class="quiz-navigation">
+                <button type="submit" class="button submit-answer">Submit Answer</button>
+                
+                {% if quiz_info.current_number < quiz_info.total_questions %}
+                    <form action="{{ url_for('quiz_next') }}" method="post" style="display: inline;">
+                        <button type="submit" class="button secondary skip-question">Skip Question</button>
+                    </form>
+                {% endif %}
+            </div>
         </form>
     </div>
-    {% endfor %}
+    
+    <!-- Quiz Navigation Info -->
+    <div class="quiz-info">
+        <p>Answer this question and you'll automatically move to the next one.</p>
+        {% if quiz_info.current_number < quiz_info.total_questions %}
+            <p>You can also skip this question if you want to come back to it later.</p>
+        {% else %}
+            <p><strong>This is the last question!</strong> Complete it to see your results.</p>
+        {% endif %}
+    </div>
 </div>
 
+<style>
+/* Quiz-specific styles for single question mode */
+.quiz-progress-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.question-counter {
+    color: var(--text-color);
+}
+
+.progress-percentage {
+    color: #ff9900;
+}
+
+.question-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.completion-indicator {
+    font-size: 14px;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-weight: bold;
+}
+
+.completion-indicator.correct {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.completion-indicator.incorrect {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+[data-theme="dark"] .completion-indicator.correct {
+    background-color: #1e4d2b;
+    color: #4caf50;
+}
+
+[data-theme="dark"] .completion-indicator.incorrect {
+    background-color: #4d1e1e;
+    color: #f44336;
+}
+
+.quiz-navigation {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+    align-items: center;
+}
+
+.submit-answer {
+    background-color: #ff9900;
+}
+
+.skip-question {
+    background-color: #6c757d;
+}
+
+.quiz-info {
+    background-color: var(--progress-bg);
+    padding: 15px;
+    border-radius: 5px;
+    margin-top: 20px;
+    text-align: center;
+    transition: background-color 0.3s ease;
+}
+
+.quiz-info p {
+    margin-bottom: 5px;
+    color: var(--footer-color);
+}
+
+.quiz-info p:last-child {
+    margin-bottom: 0;
+}
+
+/* Enhanced question card for single question */
+.question-card {
+    background-color: var(--card-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    padding: 25px;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+}
+
+.question-card:hover {
+    border-color: #ff9900;
+    box-shadow: 0 4px 15px rgba(255, 153, 0, 0.1);
+}
+
+.question-text {
+    font-size: 18px;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    color: var(--text-color);
+}
+
+.options {
+    margin-bottom: 25px;
+}
+
+.option {
+    margin-bottom: 12px;
+    padding: 8px;
+    border-radius: 5px;
+    transition: background-color 0.2s ease;
+}
+
+.option:hover {
+    background-color: var(--progress-bg);
+}
+
+.option input[type="radio"] {
+    margin-right: 10px;
+}
+
+.option label {
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1.4;
+    color: var(--text-color);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .quiz-progress-info {
+        flex-direction: column;
+        gap: 5px;
+        text-align: center;
+    }
+    
+    .question-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .quiz-navigation {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .quiz-navigation .button {
+        width: 100%;
+    }
+}
+</style>
+
 <script>
-    // Make forms remember the completion status
-    document.querySelectorAll('.answer-form').forEach(form => {
-        form.addEventListener('submit', function(e) {
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle form submission for single question
+    const answerForm = document.querySelector('.answer-form');
+    if (answerForm) {
+        answerForm.addEventListener('submit', function(e) {
             const questionId = this.querySelector('input[name="question_id"]').value;
-            const selectedAnswer = this.querySelector('input[name="answer"]:checked').value;
+            const selectedAnswer = this.querySelector('input[name="answer"]:checked');
             
-            // We'll update the completion status when we get to the result page
-            localStorage.setItem('last_submitted_question', questionId);
-            localStorage.setItem('last_selected_answer', selectedAnswer);
+            if (!selectedAnswer) {
+                e.preventDefault();
+                alert('Please select an answer before submitting.');
+                return;
+            }
+            
+            // Store for tracking (optional)
+            sessionStorage.setItem('last_submitted_question', questionId);
+            sessionStorage.setItem('last_selected_answer', selectedAnswer.value);
         });
-    });
+    }
+    
+    // Auto-focus on first radio button for keyboard navigation
+    const firstRadio = document.querySelector('input[type="radio"]');
+    if (firstRadio) {
+        firstRadio.focus();
+    }
+});
 </script>
 {% endblock %}
