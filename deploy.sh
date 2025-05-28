@@ -55,6 +55,8 @@ COPY main.py .
 COPY questions.json .
 COPY users.json .
 COPY progress.json .
+COPY flashcards.json .
+COPY flashcard_progress.json .
 COPY templates/ ./templates/
 COPY static/ ./static/
 
@@ -82,6 +84,8 @@ services:
       - ./questions.json:/app/questions.json
       - ./users.json:/app/users.json
       - ./progress.json:/app/progress.json
+      - ./flashcards.json:/app/flashcards.json
+      - ./flashcard_progress.json:/app/flashcard_progress.json
     restart: unless-stopped
 EOF
 echo -e "${GREEN}✓ Created docker-compose.yml${NC}"
@@ -171,6 +175,53 @@ else
     echo -e "${GREEN}✓ questions.json already exists${NC}"
 fi
 
+# Check for flashcards.json and create if missing
+if [ ! -f flashcards.json ]; then
+    echo -e "${YELLOW}Creating default flashcards.json file...${NC}"
+    
+    cat > flashcards.json << 'EOF'
+[
+    {
+        "id": 1,
+        "front": "What does **S3** stand for?",
+        "back": "**Simple Storage Service**\n\nS3 is Amazon's object storage service that offers industry-leading scalability, data availability, security, and performance.",
+        "category": "Storage",
+        "difficulty": "easy",
+        "tags": ["aws", "storage", "s3", "fundamentals"],
+        "created_date": "2025-05-28T12:00:00",
+        "times_studied": 0,
+        "last_studied": null
+    },
+    {
+        "id": 2,
+        "front": "What is the difference between **ECS** and **EKS**?",
+        "back": "**ECS (Elastic Container Service):**\n- AWS-native container orchestration\n- Simpler to set up and manage\n- Tight integration with AWS services\n\n**EKS (Elastic Kubernetes Service):**\n- Managed Kubernetes service\n- More complex but industry standard\n- Better for multi-cloud strategies",
+        "category": "Containers",
+        "difficulty": "medium",
+        "tags": ["aws", "containers", "ecs", "eks", "kubernetes"],
+        "created_date": "2025-05-28T12:00:00",
+        "times_studied": 0,
+        "last_studied": null
+    }
+]
+EOF
+    echo -e "${GREEN}✓ Created default flashcards.json with sample flashcards${NC}"
+else
+    echo -e "${GREEN}✓ flashcards.json already exists${NC}"
+fi
+
+# Check for flashcard_progress.json and create if missing
+if [ ! -f flashcard_progress.json ]; then
+    echo -e "${YELLOW}Creating empty flashcard_progress.json file...${NC}"
+    
+    cat > flashcard_progress.json << 'EOF'
+{}
+EOF
+    echo -e "${GREEN}✓ Created empty flashcard_progress.json${NC}"
+else
+    echo -e "${GREEN}✓ flashcard_progress.json already exists${NC}"
+fi
+
 echo -e "${YELLOW}Building and starting the Docker container...${NC}"
 
 # Stop any existing container
@@ -194,6 +245,15 @@ if $DOCKER_COMPOSE_CMD up -d --build; then
     echo -e "  ${GREEN}student2${NC} / password2"
     echo -e "  ${GREEN}instructor${NC} / teach123"
     echo -e "  ${GREEN}demo${NC} / demo"
+    
+    echo ""
+    echo -e "${YELLOW}Features included:${NC}"
+    echo -e "  ${GREEN}✓${NC} Quiz system with multiple question types"
+    echo -e "  ${GREEN}✓${NC} Flashcard system with spaced repetition"
+    echo -e "  ${GREEN}✓${NC} Progress tracking and statistics"
+    echo -e "  ${GREEN}✓${NC} User management and authentication"
+    echo -e "  ${GREEN}✓${NC} Markdown support for rich content"
+    echo -e "  ${GREEN}✓${NC} Responsive design for mobile/desktop"
 else
     echo -e "${RED}Error: Failed to start Docker container. Check the logs for more information.${NC}"
     echo -e "${YELLOW}You can check logs with: $DOCKER_COMPOSE_CMD logs${NC}"

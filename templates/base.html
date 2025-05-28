@@ -16,6 +16,7 @@
                     <a href="{{ url_for('quiz') }}">Take Quiz</a>
                     <a href="{{ url_for('add_question') }}">Add Question</a>
                     <a href="{{ url_for('manage_questions') }}">Manage Questions</a>
+                    <a href="{{ url_for('flashcards') }}">Flashcards</a>   <!-- ADD THIS LINE -->
                     <span style="color: #ff9900; margin-left: 15px;">Welcome, {{ session.username }}!</span>
                     <a href="{{ url_for('logout') }}" style="margin-left: 15px;">Logout</a>
                 {% endif %}

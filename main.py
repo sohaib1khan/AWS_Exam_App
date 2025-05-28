@@ -3,6 +3,8 @@ import random
 import json
 import os
 import markdown
+import datetime
+from datetime import datetime, timedelta
 from functools import wraps
 
 app = Flask(__name__)
@@ -41,6 +43,15 @@ if not os.path.exists('questions.json'):
 # Initialize progress.json if it doesn't exist
 if not os.path.exists('progress.json'):
     with open('progress.json', 'w') as f:
+        json.dump({}, f)
+
+# Initialize flashcard files if they don't exist
+if not os.path.exists('flashcards.json'):
+    with open('flashcards.json', 'w') as f:
+        json.dump([], f)
+
+if not os.path.exists('flashcard_progress.json'):
+    with open('flashcard_progress.json', 'w') as f:
         json.dump({}, f)
 
 def load_users():
@@ -194,7 +205,207 @@ def get_current_question():
     
     return current_question
 
-# Authentication Routes
+# ======================= FLASHCARD HELPER FUNCTIONS =======================
+
+def load_flashcards():
+    """Load flashcards from JSON file"""
+    try:
+        with open('flashcards.json', 'r') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return []
+
+def save_flashcards(flashcards):
+    """Save flashcards to JSON file"""
+    with open('flashcards.json', 'w') as f:
+        json.dump(flashcards, f, indent=2)
+
+def generate_flashcard_id():
+    """Generate unique ID for new flashcard"""
+    flashcards = load_flashcards()
+    if not flashcards:
+        return 1
+    return max(card['id'] for card in flashcards) + 1
+
+def get_flashcard_categories():
+    """Get all unique categories from flashcards"""
+    flashcards = load_flashcards()
+    categories = set()
+    for card in flashcards:
+        if card.get('category'):
+            categories.add(card['category'])
+    return sorted(list(categories))
+
+def load_flashcard_progress(username=None):
+    """Load user's flashcard progress"""
+    try:
+        with open('flashcard_progress.json', 'r') as f:
+            data = json.load(f)
+            if username:
+                return data.get(username, {})
+            return data
+    except FileNotFoundError:
+        return {} if username else {}
+
+def save_flashcard_progress_data(username, progress_data):
+    """Save user's flashcard progress"""
+    try:
+        with open('flashcard_progress.json', 'r') as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        data = {}
+    
+    data[username] = progress_data
+    
+    with open('flashcard_progress.json', 'w') as f:
+        json.dump(data, f, indent=2)
+
+def update_flashcard_progress(username, card_id, difficulty):
+    """Update progress for a specific flashcard"""
+    progress = load_flashcard_progress(username)
+    today = datetime.now().strftime('%Y-%m-%d')
+    
+    # Initialize progress structure
+    if 'studied_today' not in progress:
+        progress['studied_today'] = []
+    if 'card_stats' not in progress:
+        progress['card_stats'] = {}
+    
+    # Update card statistics
+    card_stats = progress['card_stats'].get(str(card_id), {
+        'times_studied': 0,
+        'difficulty_ratings': [],
+        'last_studied': None
+    })
+    
+    card_stats['times_studied'] += 1
+    card_stats['difficulty_ratings'].append(difficulty)
+    card_stats['last_studied'] = today
+    
+    # Keep only last 10 difficulty ratings
+    if len(card_stats['difficulty_ratings']) > 10:
+        card_stats['difficulty_ratings'] = card_stats['difficulty_ratings'][-10:]
+    
+    progress['card_stats'][str(card_id)] = card_stats
+    
+    # Add to today's studied cards if not already there
+    if card_id not in progress['studied_today']:
+        progress['studied_today'].append(card_id)
+    
+    save_flashcard_progress_data(username, progress)
+    
+
+def get_flashcard_stats(username):
+    """Get comprehensive flashcard statistics for user"""
+    flashcards = load_flashcards()
+    user_progress = load_flashcard_progress(username)
+    card_stats = user_progress.get('card_stats', {})
+    
+    stats = {
+        'total_cards': len(flashcards),
+        'studied_cards': len(card_stats),
+        'unstudied_cards': len(flashcards) - len(card_stats),
+        'due_cards': 0,
+        'mastered_cards': 0,
+        'learning_cards': 0,
+        'difficult_cards': 0,
+        'accuracy_rate': 0,
+        'categories': {}
+    }
+    
+    total_studies = 0
+    hard_ratings = 0
+    
+    for card in flashcards:
+        card_id = str(card['id'])
+        card_progress = card_stats.get(card_id, {})
+        category = card.get('category', 'General')
+        
+        # Initialize category stats
+        if category not in stats['categories']:
+            stats['categories'][category] = {
+                'total': 0,
+                'studied': 0,
+                'mastered': 0
+            }
+        
+        stats['categories'][category]['total'] += 1
+        
+        if card_id in card_stats:
+            stats['categories'][category]['studied'] += 1
+            
+            times_studied = card_progress.get('times_studied', 0)
+            recent_ratings = card_progress.get('difficulty_ratings', [])[-3:]  # Last 3 ratings
+            
+            total_studies += times_studied
+            hard_ratings += sum(1 for r in recent_ratings if r == 'hard')
+            
+            # Categorize by performance
+            if recent_ratings:
+                avg_difficulty = sum(1 if d == 'hard' else 2 if d == 'medium' else 3 for d in recent_ratings) / len(recent_ratings)
+                if avg_difficulty >= 2.5:  # Mostly easy/medium
+                    stats['mastered_cards'] += 1
+                    stats['categories'][category]['mastered'] += 1
+                elif avg_difficulty >= 1.5:  # Mixed
+                    stats['learning_cards'] += 1
+                else:  # Mostly hard
+                    stats['difficult_cards'] += 1
+            else:
+                stats['learning_cards'] += 1
+    
+    # Calculate accuracy rate (inverse of difficulty)
+    if total_studies > 0:
+        stats['accuracy_rate'] = max(0, 100 - (hard_ratings / total_studies * 100))
+    
+    return stats
+
+def get_next_flashcard(username):
+    """Get next flashcard using spaced repetition algorithm"""
+    flashcards = load_flashcards()
+    if not flashcards:
+        return None
+    
+    progress = load_flashcard_progress(username)
+    card_stats = progress.get('card_stats', {})
+    
+    # Score cards based on difficulty and study frequency
+    scored_cards = []
+    for card in flashcards:
+        card_id = str(card['id'])
+        stats = card_stats.get(card_id, {})
+        
+        # Calculate priority score
+        times_studied = stats.get('times_studied', 0)
+        recent_ratings = stats.get('difficulty_ratings', [])[-3:]  # Last 3 ratings
+        
+        # Higher score = higher priority
+        score = 100  # Base score
+        
+        # Reduce score based on times studied (recently studied = lower priority)
+        score -= times_studied * 10
+        
+        # Increase score for hard cards
+        if recent_ratings:
+            avg_difficulty = sum(1 if d == 'hard' else 2 if d == 'medium' else 3 for d in recent_ratings) / len(recent_ratings)
+            score += (3 - avg_difficulty) * 20  # Hard cards get higher score
+        
+        # Add some randomness
+        score += random.randint(-10, 10)
+        
+        scored_cards.append((score, card))
+    
+    # Sort by score (highest first) and return top card
+    scored_cards.sort(key=lambda x: x[0], reverse=True)
+    return scored_cards[0][1] if scored_cards else None
+
+def clear_study_session(username):
+    """Clear today's study session"""
+    progress = load_flashcard_progress(username)
+    progress['studied_today'] = []
+    save_flashcard_progress_data(username, progress)
+
+# ======================= AUTHENTICATION ROUTES =======================
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -240,7 +451,8 @@ def reset_progress():
     
     return jsonify({'success': True})
 
-# Main Routes (now with authentication)
+# ======================= MAIN ROUTES =======================
+
 @app.route('/')
 @login_required
 def index():
@@ -261,7 +473,8 @@ def question_stats():
         'progress': user_progress
     })
 
-# Updated Quiz Routes - Single Question Per Page
+# ======================= QUIZ ROUTES =======================
+
 @app.route('/quiz')
 @login_required
 def quiz():
@@ -426,6 +639,8 @@ def quiz_next():
     
     return redirect(url_for('quiz_question'))
 
+# ======================= QUESTION MANAGEMENT ROUTES =======================
+
 @app.route('/add_question', methods=['GET', 'POST'])
 @login_required
 def add_question():
@@ -549,6 +764,179 @@ def delete_question(question_id):
     save_questions(questions)
     flash('Question deleted successfully!')
     return redirect(url_for('manage_questions'))
+
+# ======================= FLASHCARD ROUTES =======================
+
+@app.route('/flashcards')
+@login_required
+def flashcards():
+    """Display all flashcards with management options"""
+    flashcards = load_flashcards()
+    categories = get_flashcard_categories()
+    username = session.get('username')
+    
+    # Get filter parameters
+    category_filter = request.args.get('category', '')
+    search_query = request.args.get('search', '')
+    
+    # Filter flashcards
+    filtered_cards = flashcards
+    if category_filter:
+        filtered_cards = [card for card in filtered_cards if card.get('category') == category_filter]
+    if search_query:
+        filtered_cards = [card for card in filtered_cards 
+                         if search_query.lower() in card.get('front', '').lower() or 
+                            search_query.lower() in card.get('back', '').lower()]
+    
+    # Generate stats for the template
+    stats = get_flashcard_stats(username)
+    
+    # Add progress info to each flashcard
+    user_progress = load_flashcard_progress(username)
+    card_stats = user_progress.get('card_stats', {})
+    for card in filtered_cards:
+        card_id = str(card['id'])
+        card['progress'] = card_stats.get(card_id, {})
+    
+    return render_template('flashcards.html', 
+                         flashcards=filtered_cards,
+                         categories=categories,
+                         current_category=category_filter,
+                         search_query=search_query,
+                         stats=stats)
+
+@app.route('/flashcards/add', methods=['GET', 'POST'])
+@login_required
+def add_flashcard():
+    """Add a new flashcard"""
+    if request.method == 'POST':
+        front = request.form.get('front')
+        back = request.form.get('back')
+        category = request.form.get('category', 'General')
+        tags = request.form.get('tags', '')
+        
+        if not front or not back:
+            flash('Both front and back content are required!', 'error')
+            return render_template('add_flashcard.html')
+        
+        # Load existing flashcards
+        flashcards = load_flashcards()
+        
+        # Create new flashcard
+        new_card = {
+            'id': generate_flashcard_id(),
+            'front': front,
+            'back': back,
+            'category': category,
+            'tags': [tag.strip() for tag in tags.split(',') if tag.strip()],
+            'created_date': datetime.now().isoformat(),
+            'difficulty': 'medium',
+            'times_studied': 0,
+            'last_studied': None
+        }
+        
+        flashcards.append(new_card)
+        save_flashcards(flashcards)
+        
+        flash('Flashcard added successfully!', 'success')
+        return redirect(url_for('flashcards'))
+    
+    return render_template('add_flashcard.html')
+
+@app.route('/flashcards/edit/<int:card_id>', methods=['GET', 'POST'])
+@login_required
+def edit_flashcard(card_id):
+    """Edit an existing flashcard"""
+    flashcards = load_flashcards()
+    card = next((card for card in flashcards if card['id'] == card_id), None)
+    
+    if not card:
+        flash('Flashcard not found!', 'error')
+        return redirect(url_for('flashcards'))
+    
+    if request.method == 'POST':
+        card['front'] = request.form.get('front')
+        card['back'] = request.form.get('back')
+        card['category'] = request.form.get('category', 'General')
+        card['tags'] = [tag.strip() for tag in request.form.get('tags', '').split(',') if tag.strip()]
+        
+        save_flashcards(flashcards)
+        flash('Flashcard updated successfully!', 'success')
+        return redirect(url_for('flashcards'))
+    
+    return render_template('edit_flashcard.html', card=card)
+
+@app.route('/flashcards/delete/<int:card_id>', methods=['POST'])
+@login_required
+def delete_flashcard(card_id):
+    """Delete a flashcard"""
+    flashcards = load_flashcards()
+    flashcards = [card for card in flashcards if card['id'] != card_id]
+    save_flashcards(flashcards)
+    
+    flash('Flashcard deleted successfully!', 'success')
+    return redirect(url_for('flashcards'))
+
+@app.route('/flashcards/study/card', methods=['GET', 'POST'])
+@login_required
+def study_card():
+    """Study flashcards with spaced repetition"""
+    username = session['username']
+    
+    # Handle POST requests (rating cards, skipping)
+    if request.method == 'POST':
+        action = request.form.get('action')
+        card_id = request.form.get('card_id')
+        
+        if action == 'rate' and card_id:
+            difficulty = request.form.get('difficulty')
+            update_flashcard_progress(username, int(card_id), difficulty)
+        
+        # Redirect to show next card
+        return redirect(url_for('study_card'))
+    
+    # Handle restart parameter
+    if request.args.get('restart'):
+        clear_study_session(username)
+    
+    # Get next card to study
+    current_card = get_next_flashcard(username)
+    
+    if current_card:
+        # Calculate progress
+        total_cards = len(load_flashcards())
+        progress_data = load_flashcard_progress(username)
+        cards_studied = len(progress_data.get('studied_today', []))
+        progress = (cards_studied / total_cards * 100) if total_cards > 0 else 0
+        
+        return render_template('study_flashcards.html',
+                             current_card=current_card,
+                             progress=progress,
+                             cards_studied=cards_studied,
+                             total_cards=total_cards)
+    else:
+        # No more cards to study
+        return render_template('study_flashcards.html',
+                             current_card=None,
+                             progress=100,
+                             cards_studied=0,
+                             total_cards=0)
+
+@app.route('/flashcards/study')
+@login_required
+def study_flashcards():
+    """Start a flashcard study session - redirects to study card"""
+    return redirect(url_for('study_card'))
+
+@app.route('/flashcards/study/start')
+@login_required
+def start_study_session():
+    """Start a new study session and clear previous session"""
+    username = session.get('username')
+    clear_study_session(username)
+    return redirect(url_for('study_card'))
+
+# ======================= UTILITY ROUTES =======================
 
 @app.route('/markdown_preview', methods=['POST'])
 @login_required

@@ -1,0 +1,102 @@
+[
+  {
+    "id": 3,
+    "front": "What is AWS Lambda?",
+    "back": "AWS Lambda is a serverless compute service that runs code in response to events and automatically manages the underlying compute resources. You pay only for the compute time consumed - no charge when code is not running.",
+    "category": "Compute",
+    "difficulty": "easy",
+    "tags": [],
+    "created_date": "2025-05-28T17:50:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 4,
+    "front": "What is the maximum execution time for an AWS Lambda function?",
+    "back": "The maximum execution time for an AWS Lambda function is 15 minutes (900 seconds). After this time, the function will timeout and terminate.",
+    "category": "Compute",
+    "difficulty": "easy",
+    "tags": [],
+    "created_date": "2025-05-28T17:51:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 5,
+    "front": "What is Amazon DynamoDB?",
+    "back": "Amazon DynamoDB is a fully managed NoSQL database service that provides fast and predictable performance with seamless scalability. It supports both document and key-value data models.",
+    "category": "Database",
+    "difficulty": "easy",
+    "tags": [],
+    "created_date": "2025-05-28T17:52:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 6,
+    "front": "What is AWS CodePipeline?",
+    "back": "AWS CodePipeline is a continuous integration and continuous delivery (CI/CD) service that automates the build, test, and deploy phases of your release process every time there is a code change.",
+    "category": "Developer Tools",
+    "difficulty": "easy",
+    "tags": [],
+    "created_date": "2025-05-28T17:53:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 7,
+    "front": "What are the two types of scaling in Amazon EC2 Auto Scaling?",
+    "back": "The two types of scaling are: 1) Vertical Scaling (Scale Up/Down) - changing the instance size/type, and 2) Horizontal Scaling (Scale Out/In) - adding or removing instances from your Auto Scaling group.",
+    "category": "Compute",
+    "difficulty": "easy",
+    "tags": [],
+    "created_date": "2025-05-28T17:54:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 8,
+    "front": "What is Amazon API Gateway?",
+    "back": "Amazon API Gateway is a fully managed service that makes it easy to create, publish, maintain, monitor, and secure APIs at any scale. It acts as a front door for applications to access data, business logic, or functionality from backend services.",
+    "category": "Networking",
+    "difficulty": "easy",
+    "tags": [],
+    "created_date": "2025-05-28T17:55:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 9,
+    "front": "What is AWS CloudFormation?",
+    "back": "AWS CloudFormation is an Infrastructure as Code (IaC) service that allows you to define and provision AWS infrastructure resources using JSON or YAML templates. It helps you manage infrastructure in a predictable and repeatable manner.",
+    "category": "Management Tools",
+    "difficulty": "easy",
+    "tags": [],
+    "created_date": "2025-05-28T17:56:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 10,
+    "front": "What is Amazon SQS and what does it stand for?",
+    "back": "Amazon SQS stands for Simple Queue Service. It's a fully managed message queuing service that enables you to decouple and scale microservices, distributed systems, and serverless applications.",
+    "category": "Application Integration",
+    "difficulty": "easy",
+    "tags": [],
+    "created_date": "2025-05-28T17:57:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 11,
+    "front": "What is the difference between Amazon SQS Standard and FIFO queues?",
+    "back": "Standard queues offer maximum throughput, best-effort ordering, and at-least-once delivery. FIFO queues guarantee exactly-once processing and preserve the exact order of messages, but have lower throughput (300 TPS without batching, 3000 TPS with batching).",
+    "category": "Application Integration",
+    "difficulty": "medium",
+    "tags": [],
+    "created_date": "2025-05-28T17:58:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 12,
+    "front": "What is AWS Elastic Beanstalk?",
+    "back": "AWS Elastic Beanstalk is a Platform as a Service (PaaS) that makes it easy to deploy and manage applications in the AWS cloud. You simply upload your code and Beanstalk automatically handles deployment, load balancing, auto-scaling, and health monitoring.",
+    "category": "Compute",
+    "difficulty": "easy",
+    "tags": [],
+    "created_date": "2025-05-28T17:59:00.000000",
+    "created_by": "admin"
+  }
+]

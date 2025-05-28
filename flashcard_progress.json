@@ -1,0 +1,32 @@
+{
+  "admin": {
+    "studied_today": [
+      1,
+      2,
+      5
+    ],
+    "card_stats": {
+      "1": {
+        "times_studied": 1,
+        "difficulty_ratings": [
+          "easy"
+        ],
+        "last_studied": "2025-05-28"
+      },
+      "2": {
+        "times_studied": 1,
+        "difficulty_ratings": [
+          "hard"
+        ],
+        "last_studied": "2025-05-28"
+      },
+      "5": {
+        "times_studied": 1,
+        "difficulty_ratings": [
+          "medium"
+        ],
+        "last_studied": "2025-05-28"
+      }
+    }
+  }
+}
