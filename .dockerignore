@@ -5,3 +5,6 @@ __pycache__/
 *.pyd
 .Python
 .git/
+README.md
+deploy.sh
+.dockerignore
