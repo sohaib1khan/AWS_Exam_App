@@ -91,8 +91,8 @@ def get_user_progress(username):
     progress = load_progress()
     return progress.get(username, {})
 
-def save_user_progress(username, question_id, is_correct):
-    """Save progress for a specific user and question"""
+def save_user_progress(username, question_id, is_correct, score=None):
+    """Save progress for a specific user and question with score support"""
     progress = load_progress()
     
     if username not in progress:
@@ -101,10 +101,69 @@ def save_user_progress(username, question_id, is_correct):
     progress[username][str(question_id)] = {
         'completed': True,
         'correct': is_correct,
+        'score': score if score is not None else (1.0 if is_correct else 0.0),
         'timestamp': str(json.dumps(None))  # You can add proper timestamp if needed
     }
     
     save_progress(progress)
+
+def process_question_answers(form_data):
+    """Process answers from form data, handling both single and multiple correct answers"""
+    question_type = form_data.get('question_type', 'single')
+    
+    if question_type == 'multiple':
+        # For multiple choice, get all checked correct answers
+        correct_answers = []
+        for i in range(1, 7):
+            if form_data.get(f'correct_answer_{i}'):
+                option_text = form_data.get(f'option{i}')
+                if option_text and option_text.strip():
+                    correct_answers.append(option_text.strip())
+        return correct_answers if correct_answers else []
+    else:
+        # For single choice, return single answer as array for consistency
+        correct_answer = form_data.get('correct_answer')
+        return [correct_answer] if correct_answer else []
+
+def check_user_answer(user_answers, correct_answers, question_type):
+    """Check user answer(s) against correct answer(s) and return score"""
+    if question_type == 'single':
+        # Single answer - simple comparison
+        user_answer = user_answers[0] if user_answers else ""
+        correct_answer = correct_answers[0] if correct_answers else ""
+        return {
+            'is_correct': user_answer == correct_answer,
+            'score': 1.0 if user_answer == correct_answer else 0.0,
+            'partial_credit': False
+        }
+    else:
+        # Multiple answers - calculate partial credit
+        user_set = set(user_answers)
+        correct_set = set(correct_answers)
+        
+        if not correct_set:  # No correct answers defined
+            return {'is_correct': False, 'score': 0.0, 'partial_credit': False}
+        
+        # Calculate score
+        correct_selected = len(user_set.intersection(correct_set))
+        incorrect_selected = len(user_set - correct_set)
+        total_correct = len(correct_set)
+        
+        # Scoring: +1 for each correct, -0.5 for each incorrect, minimum 0
+        raw_score = correct_selected - (incorrect_selected * 0.5)
+        score = max(0, raw_score) / total_correct
+        
+        is_perfect = user_set == correct_set
+        has_partial = score > 0 and not is_perfect
+        
+        return {
+            'is_correct': is_perfect,
+            'score': min(1.0, score),  # Cap at 1.0
+            'partial_credit': has_partial,
+            'correct_selected': correct_selected,
+            'incorrect_selected': incorrect_selected,
+            'total_correct': total_correct
+        }
 
 def initialize_quiz_session():
     """Initialize a new quiz session with shuffled questions"""
@@ -280,22 +339,28 @@ def quiz_complete():
     user_progress = get_user_progress(username)
     question_ids = session['quiz_questions']
     
-    # Calculate results
+    # Calculate results with score support
     total_questions = len(question_ids)
     answered_questions = 0
     correct_answers = 0
+    total_score = 0.0
     
     for question_id in question_ids:
         if str(question_id) in user_progress:
             answered_questions += 1
             if user_progress[str(question_id)]['correct']:
                 correct_answers += 1
+            # Add score if available (for partial credit)
+            score = user_progress[str(question_id)].get('score', 1.0 if user_progress[str(question_id)]['correct'] else 0.0)
+            total_score += score
     
     results = {
         'total_questions': total_questions,
         'answered_questions': answered_questions,
         'correct_answers': correct_answers,
-        'score_percentage': (correct_answers / total_questions * 100) if total_questions > 0 else 0
+        'total_score': total_score,
+        'score_percentage': (correct_answers / total_questions * 100) if total_questions > 0 else 0,
+        'weighted_score_percentage': (total_score / total_questions * 100) if total_questions > 0 else 0
     }
     
     # Clear quiz session
@@ -309,25 +374,48 @@ def quiz_complete():
 @login_required
 def check_answer():
     question_id = int(request.form.get('question_id'))
-    selected_answer = request.form.get('answer')
     username = session.get('username')
     
     questions = load_questions()
     question = next((q for q in questions if q['id'] == question_id), None)
     
+    if not question:
+        flash('Question not found.')
+        return redirect(url_for('quiz'))
+    
+    # Get question type and correct answers (with backward compatibility)
+    question_type = question.get('question_type', 'single')
+    correct_answers = question.get('correct_answers', [question.get('correct_answer', '')])
+    
+    # Handle backward compatibility - if correct_answers doesn't exist but correct_answer does
+    if not correct_answers and question.get('correct_answer'):
+        correct_answers = [question.get('correct_answer')]
+    
+    # Get user answers
+    if question_type == 'multiple':
+        # Multiple choice - get all checked answers
+        user_answers = request.form.getlist('answer')
+    else:
+        # Single choice - get single answer
+        user_answer = request.form.get('answer')
+        user_answers = [user_answer] if user_answer else []
+    
+    # Check answers and calculate score
+    result = check_user_answer(user_answers, correct_answers, question_type)
+    
     # Convert markdown to HTML
     question['question_html'] = convert_markdown(question['question'])
     question['explanation_html'] = convert_markdown(question['explanation'])
     
-    is_correct = selected_answer == question['correct_answer']
-    
-    # Save user progress
-    save_user_progress(username, question_id, is_correct)
+    # Save user progress (use score for more nuanced tracking)
+    save_user_progress(username, question_id, result['is_correct'], result['score'])
     
     return render_template('result.html', 
                           question=question, 
-                          selected_answer=selected_answer, 
-                          is_correct=is_correct)
+                          user_answers=user_answers,
+                          correct_answers=correct_answers,
+                          result=result,
+                          question_type=question_type)
 
 @app.route('/quiz/next', methods=['POST'])
 @login_required
@@ -349,21 +437,43 @@ def add_question():
         
         # Get form data
         question_text = request.form.get('question')
-        options = [
-            request.form.get('option1'),
-            request.form.get('option2'),
-            request.form.get('option3'),
-            request.form.get('option4')
-        ]
-        correct_answer = request.form.get('correct_answer')
+        question_type = request.form.get('question_type', 'single')
+        
+        # Get options (filter out empty ones)
+        options = []
+        for i in range(1, 7):
+            option = request.form.get(f'option{i}')
+            if option and option.strip():
+                options.append(option.strip())
+        
+        # Process correct answers based on question type
+        correct_answers = process_question_answers(request.form)
         explanation = request.form.get('explanation')
         
-        # Create new question
+        # Validate that we have at least 2 options and at least 1 correct answer
+        if len(options) < 2:
+            flash('Please provide at least 2 answer options.')
+            return render_template('add_question.html')
+        
+        if not correct_answers:
+            flash('Please select at least one correct answer.')
+            return render_template('add_question.html')
+        
+        # Validate that all correct answers exist in options
+        for correct in correct_answers:
+            if correct not in options:
+                flash(f'Correct answer "{correct}" must match one of the provided options exactly.')
+                return render_template('add_question.html')
+        
+        # Create new question with backward compatibility
         new_question = {
             "id": new_id,
             "question": question_text,
             "options": options,
-            "correct_answer": correct_answer,
+            "question_type": question_type,
+            "correct_answers": correct_answers,
+            # Keep old format for backward compatibility
+            "correct_answer": correct_answers[0] if correct_answers else "",
             "explanation": explanation
         }
         
@@ -393,16 +503,37 @@ def edit_question(question_id):
         return redirect(url_for('manage_questions'))
     
     if request.method == 'POST':
-        # Update question data
-        question['question'] = request.form.get('question')
-        question['options'] = [
-            request.form.get('option1'),
-            request.form.get('option2'),
-            request.form.get('option3'),
-            request.form.get('option4')
-        ]
-        question['correct_answer'] = request.form.get('correct_answer')
-        question['explanation'] = request.form.get('explanation')
+        # Get form data
+        question_text = request.form.get('question')
+        question_type = request.form.get('question_type', question.get('question_type', 'single'))
+        
+        # Get options (filter out empty ones)
+        options = []
+        for i in range(1, 7):
+            option = request.form.get(f'option{i}')
+            if option and option.strip():
+                options.append(option.strip())
+        
+        # Process correct answers based on question type
+        correct_answers = process_question_answers(request.form)
+        explanation = request.form.get('explanation')
+        
+        # Validate
+        if len(options) < 2:
+            flash('Please provide at least 2 answer options.')
+            return render_template('edit_question.html', question=question)
+        
+        if not correct_answers:
+            flash('Please select at least one correct answer.')
+            return render_template('edit_question.html', question=question)
+        
+        # Update question data with backward compatibility
+        question['question'] = question_text
+        question['options'] = options
+        question['question_type'] = question_type
+        question['correct_answers'] = correct_answers
+        question['correct_answer'] = correct_answers[0] if correct_answers else ""
+        question['explanation'] = explanation
         
         save_questions(questions)
         flash('Question updated successfully!')

@@ -20,10 +20,18 @@
     <div class="question-card" id="question-{{ question.id }}" 
          data-question-id="{{ question.id }}" 
          data-completed="{{ question.completed|lower }}" 
-         data-user-correct="{{ question.user_correct|lower }}">
+         data-user-correct="{{ question.user_correct|lower }}"
+         data-question-type="{{ question.get('question_type', 'single') }}">
         
         <div class="question-header">
             <h3>Question {{ quiz_info.current_number }}</h3>
+            <div class="question-type-badge">
+                {% if question.get('question_type', 'single') == 'multiple' %}
+                    <span class="badge multiple">Multiple Choice</span>
+                {% else %}
+                    <span class="badge single">Single Choice</span>
+                {% endif %}
+            </div>
             {% if question.completed %}
                 <div class="completion-indicator {{ 'correct' if question.user_correct else 'incorrect' }}">
                     {% if question.user_correct %}
@@ -37,16 +45,37 @@
         
         <div class="question-text">{{ question.question_html|safe }}</div>
         
+        <!-- Instructions based on question type -->
+        <div class="question-instructions">
+            {% if question.get('question_type', 'single') == 'multiple' %}
+                <p class="instruction-text">💡 <strong>Select all answers that apply.</strong> This question may have multiple correct answers.</p>
+            {% else %}
+                <p class="instruction-text">💡 <strong>Select the best answer.</strong> Choose only one option.</p>
+            {% endif %}
+        </div>
+        
         <form action="{{ url_for('check_answer') }}" method="post" class="answer-form">
             <input type="hidden" name="question_id" value="{{ question.id }}">
+            <input type="hidden" name="question_type" value="{{ question.get('question_type', 'single') }}">
             
             <div class="options">
-                {% for option in question.options %}
-                <div class="option">
-                    <input type="radio" name="answer" id="q{{ question.id }}-option{{ loop.index }}" value="{{ option }}" required>
-                    <label for="q{{ question.id }}-option{{ loop.index }}">{{ option }}</label>
-                </div>
-                {% endfor %}
+                {% if question.get('question_type', 'single') == 'multiple' %}
+                    {# Multiple Choice - Checkboxes #}
+                    {% for option in question.options %}
+                    <div class="option">
+                        <input type="checkbox" name="answer" id="q{{ question.id }}-option{{ loop.index }}" value="{{ option }}">
+                        <label for="q{{ question.id }}-option{{ loop.index }}">{{ option }}</label>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    {# Single Choice - Radio Buttons #}
+                    {% for option in question.options %}
+                    <div class="option">
+                        <input type="radio" name="answer" id="q{{ question.id }}-option{{ loop.index }}" value="{{ option }}" required>
+                        <label for="q{{ question.id }}-option{{ loop.index }}">{{ option }}</label>
+                    </div>
+                    {% endfor %}
+                {% endif %}
             </div>
             
             <div class="quiz-navigation">
@@ -95,6 +124,41 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.question-type-badge {
+    display: flex;
+    align-items: center;
+}
+
+.badge {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.badge.single {
+    background-color: #e3f2fd;
+    color: #1976d2;
+}
+
+.badge.multiple {
+    background-color: #f3e5f5;
+    color: #7b1fa2;
+}
+
+[data-theme="dark"] .badge.single {
+    background-color: #1a237e;
+    color: #90caf9;
+}
+
+[data-theme="dark"] .badge.multiple {
+    background-color: #4a148c;
+    color: #ce93d8;
 }
 
 .completion-indicator {
@@ -122,6 +186,20 @@
 [data-theme="dark"] .completion-indicator.incorrect {
     background-color: #4d1e1e;
     color: #f44336;
+}
+
+.question-instructions {
+    margin-bottom: 20px;
+    padding: 12px;
+    background-color: var(--progress-bg);
+    border-radius: 8px;
+    border-left: 4px solid #ff9900;
+}
+
+.instruction-text {
+    margin: 0;
+    color: var(--text-color);
+    font-size: 14px;
 }
 
 .quiz-navigation {
@@ -194,7 +272,8 @@
     background-color: var(--progress-bg);
 }
 
-.option input[type="radio"] {
+.option input[type="radio"], 
+.option input[type="checkbox"] {
     margin-right: 10px;
 }
 
@@ -203,6 +282,16 @@
     font-size: 16px;
     line-height: 1.4;
     color: var(--text-color);
+}
+
+/* Special styling for multiple choice */
+.question-card[data-question-type="multiple"] .option {
+    border-left: 3px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.question-card[data-question-type="multiple"] .option:hover {
+    border-left-color: #ff9900;
 }
 
 /* Responsive design */
@@ -237,24 +326,41 @@ document.addEventListener('DOMContentLoaded', function() {
     if (answerForm) {
         answerForm.addEventListener('submit', function(e) {
             const questionId = this.querySelector('input[name="question_id"]').value;
-            const selectedAnswer = this.querySelector('input[name="answer"]:checked');
+            const questionType = this.querySelector('input[name="question_type"]').value;
             
-            if (!selectedAnswer) {
-                e.preventDefault();
-                alert('Please select an answer before submitting.');
-                return;
+            if (questionType === 'multiple') {
+                // Multiple choice - check if at least one checkbox is selected
+                const selectedAnswers = this.querySelectorAll('input[name="answer"]:checked');
+                if (selectedAnswers.length === 0) {
+                    e.preventDefault();
+                    alert('Please select at least one answer before submitting.');
+                    return;
+                }
+                
+                // Store selected answers
+                const answerValues = Array.from(selectedAnswers).map(input => input.value);
+                sessionStorage.setItem('last_submitted_question', questionId);
+                sessionStorage.setItem('last_selected_answers', JSON.stringify(answerValues));
+            } else {
+                // Single choice - check if radio button is selected
+                const selectedAnswer = this.querySelector('input[name="answer"]:checked');
+                if (!selectedAnswer) {
+                    e.preventDefault();
+                    alert('Please select an answer before submitting.');
+                    return;
+                }
+                
+                // Store selected answer
+                sessionStorage.setItem('last_submitted_question', questionId);
+                sessionStorage.setItem('last_selected_answer', selectedAnswer.value);
             }
-            
-            // Store for tracking (optional)
-            sessionStorage.setItem('last_submitted_question', questionId);
-            sessionStorage.setItem('last_selected_answer', selectedAnswer.value);
         });
     }
     
-    // Auto-focus on first radio button for keyboard navigation
-    const firstRadio = document.querySelector('input[type="radio"]');
-    if (firstRadio) {
-        firstRadio.focus();
+    // Auto-focus on first input for keyboard navigation
+    const firstInput = document.querySelector('input[type="radio"], input[type="checkbox"]');
+    if (firstInput) {
+        firstInput.focus();
     }
 });
 </script>

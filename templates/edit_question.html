@@ -19,9 +19,29 @@
         <div class="form-group">
             <label>Answer Options:</label>
             <div class="option-inputs">
-                {% for i in range(4) %}
-                <input type="text" name="option{{ i+1 }}" placeholder="Option {{ i+1 }}" value="{{ question.options[i] }}" required>
-                {% endfor %}
+                <!-- Option 1 - Always required -->
+                <input type="text" name="option1" placeholder="Option 1" 
+                       value="{{ question.options[0] if question.options|length > 0 else '' }}" required>
+                
+                <!-- Option 2 - Always required -->
+                <input type="text" name="option2" placeholder="Option 2" 
+                       value="{{ question.options[1] if question.options|length > 1 else '' }}" required>
+                
+                <!-- Option 3 - Optional -->
+                <input type="text" name="option3" placeholder="Option 3" 
+                       value="{{ question.options[2] if question.options|length > 2 else '' }}">
+                
+                <!-- Option 4 - Optional -->
+                <input type="text" name="option4" placeholder="Option 4" 
+                       value="{{ question.options[3] if question.options|length > 3 else '' }}">
+                
+                <!-- Option 5 - Optional (NEW) -->
+                <input type="text" name="option5" placeholder="Option 5" 
+                       value="{{ question.options[4] if question.options|length > 4 else '' }}">
+                
+                <!-- Option 6 - Optional (NEW) -->
+                <input type="text" name="option6" placeholder="Option 6" 
+                       value="{{ question.options[5] if question.options|length > 5 else '' }}">
             </div>
         </div>
         
