@@ -10,18 +10,34 @@
     <header>
         <div class="header-content">
             <h1>AWS Developer Associate Study Quiz</h1>
+            
+            {% if session.username %}
             <nav>
-                {% if session.username %}
-                    <a href="{{ url_for('index') }}">Home</a>
-                    <a href="{{ url_for('quiz') }}">Take Quiz</a>
-                    <a href="{{ url_for('add_question') }}">Add Question</a>
-                    <a href="{{ url_for('manage_questions') }}">Manage Questions</a>
-                    <a href="{{ url_for('flashcards') }}">Flashcards</a>   <!-- ADD THIS LINE -->
-                    <span style="color: #ff9900; margin-left: 15px;">Welcome, {{ session.username }}!</span>
-                    <a href="{{ url_for('logout') }}" style="margin-left: 15px;">Logout</a>
-                {% endif %}
+                {% set nav_items = [
+                    ('index', 'Home', '🏠'),
+                    ('quiz', 'Take Quiz', '🎯'),
+                    ('add_question', 'Add Question', '➕'),
+                    ('manage_questions', 'Manage Questions', '⚙️'),
+                    ('flashcards', 'Flashcards', '🗂️')
+                ] %}
+                
+                {% for route, label, icon in nav_items %}
+                    <a href="{{ url_for(route) }}" 
+                       class="nav-link {% if request.endpoint == route %}active{% endif %}">
+                        <span class="nav-icon">{{ icon }}</span>
+                        {{ label }}
+                    </a>
+                {% endfor %}
+                
+                <span class="nav-welcome">Welcome, {{ session.username }}!</span>
+                <a href="{{ url_for('logout') }}" class="nav-link">
+                    <span class="nav-icon">🚪</span>
+                    Logout
+                </a>
             </nav>
+            {% endif %}
         </div>
+        
         <button class="theme-toggle" onclick="toggleTheme()" id="theme-toggle">
             🌙 Dark
         </button>
@@ -44,7 +60,7 @@
     <footer class="footer">
         <p>
             AWS Developer Associate Study App | 
-            <a href="https://github.com/sohaib1khan/AWS_Exam_App.git" target="_blank" rel="noopener noreferrer" style="color: #ff9900; text-decoration: none;">
+            <a href="https://github.com/sohaib1khan/AWS_Exam_App.git" target="_blank" rel="noopener noreferrer">
                 View on GitHub ⭐
             </a>
         </p>
@@ -55,7 +71,7 @@
         const THEME_KEY = 'aws_quiz_theme';
         
         function initializeTheme() {
-            const savedTheme = localStorage.getItem(THEME_KEY) || 'light';
+            const savedTheme = localStorage.getItem(THEME_KEY) || 'dark';
             setTheme(savedTheme);
         }
         
@@ -73,15 +89,13 @@
         }
         
         function toggleTheme() {
-            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
             const newTheme = currentTheme === 'light' ? 'dark' : 'light';
             setTheme(newTheme);
         }
 
-        // Progress tracking functions (updated to work with server-side authentication)
         function resetProgress() {
             if (confirm('Are you sure you want to reset your progress? This cannot be undone.')) {
-                // Note: With server-side auth, you might want to add a backend endpoint for this
                 fetch('/reset_progress', { method: 'POST' })
                     .then(response => {
                         if (response.ok) {
@@ -93,15 +107,12 @@
                     })
                     .catch(error => {
                         console.error('Error resetting progress:', error);
-                        // Fallback to page reload
                         window.location.reload();
                     });
             }
         }
         
-        // Update progress UI for server-side auth
         function updateProgressUI() {
-            // Update progress counter if it exists
             const counterElement = document.getElementById('progress-counter');
             if (counterElement) {
                 counterElement.textContent = 'Loading progress...';
@@ -118,7 +129,6 @@
                         const completed = data.completed || 0;
                         counterElement.textContent = `${completed} / ${total} completed`;
                         
-                        // Update progress bar if it exists
                         const progressBar = document.getElementById('progress-bar-fill');
                         if (progressBar && total > 0) {
                             const percentage = (completed / total) * 100;
@@ -130,71 +140,40 @@
                         counterElement.textContent = 'Error loading progress';
                     });
             }
-            
-            // Update question cards if they exist (server-side completion status)
-            document.querySelectorAll('.question-card').forEach(card => {
-                const questionId = card.dataset.questionId;
-                
-                // Check if this card has completion data from server
-                if (card.dataset.completed === 'true') {
-                    card.classList.add('completed');
-                    const isCorrect = card.dataset.userCorrect === 'true';
-                    const status = isCorrect ? 'correct' : 'incorrect';
-                    card.classList.add(status);
-                    
-                    // Add completed indicator if it doesn't exist
-                    if (!card.querySelector('.completion-status')) {
-                        const statusIndicator = document.createElement('div');
-                        statusIndicator.className = `completion-status ${status}`;
-                        statusIndicator.textContent = isCorrect ? 'Answered Correctly' : 'Answered Incorrectly';
-                        
-                        const heading = card.querySelector('h3');
-                        if (heading) {
-                            heading.appendChild(statusIndicator);
-                        }
-                    }
-                }
-            });
         }
 
         // Markdown preview functionality
+        function updateMarkdownPreview(editor, previewContainer) {
+            const markdownText = editor.value;
+            
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '{{ url_for("markdown_preview") }}', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    previewContainer.innerHTML = xhr.responseText;
+                }
+            };
+            
+            xhr.send('text=' + encodeURIComponent(markdownText));
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize theme first
             initializeTheme();
             
             const markdownEditors = document.querySelectorAll('.markdown-editor');
-            
             markdownEditors.forEach(editor => {
                 const previewContainer = editor.closest('.markdown-field')?.querySelector('.markdown-preview');
                 if (!previewContainer) return;
                 
-                // Update preview on input
                 editor.addEventListener('input', function() {
                     updateMarkdownPreview(editor, previewContainer);
                 });
                 
-                // Initialize preview
                 updateMarkdownPreview(editor, previewContainer);
             });
             
-            function updateMarkdownPreview(editor, previewContainer) {
-                const markdownText = editor.value;
-                
-                // Make AJAX request to get HTML preview
-                const xhr = new XMLHttpRequest();
-                xhr.open('POST', '{{ url_for("markdown_preview") }}', true);
-                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-                
-                xhr.onreadystatechange = function() {
-                    if (xhr.readyState === 4 && xhr.status === 200) {
-                        previewContainer.innerHTML = xhr.responseText;
-                    }
-                };
-                
-                xhr.send('text=' + encodeURIComponent(markdownText));
-            }
-            
-            // Initialize progress UI
             updateProgressUI();
         });
     </script>

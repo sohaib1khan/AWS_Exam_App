@@ -3,7 +3,40 @@
     "studied_today": [
       1,
       2,
-      5
+      5,
+      6,
+      10,
+      4,
+      11,
+      7,
+      3,
+      8,
+      12,
+      14,
+      13,
+      21,
+      31,
+      15,
+      22,
+      73,
+      50,
+      87,
+      45,
+      23,
+      48,
+      44,
+      42,
+      29,
+      43,
+      66,
+      54,
+      18,
+      16,
+      58,
+      39,
+      59,
+      19,
+      38
     ],
     "card_stats": {
       "1": {
@@ -21,11 +54,245 @@
         "last_studied": "2025-05-28"
       },
       "5": {
-        "times_studied": 1,
+        "times_studied": 2,
         "difficulty_ratings": [
-          "medium"
+          "medium",
+          "easy"
         ],
         "last_studied": "2025-05-28"
+      },
+      "6": {
+        "times_studied": 1,
+        "difficulty_ratings": [
+          "easy"
+        ],
+        "last_studied": "2025-05-28"
+      },
+      "10": {
+        "times_studied": 1,
+        "difficulty_ratings": [
+          "easy"
+        ],
+        "last_studied": "2025-05-28"
+      },
+      "4": {
+        "times_studied": 2,
+        "difficulty_ratings": [
+          "easy",
+          "easy"
+        ],
+        "last_studied": "2025-05-28"
+      },
+      "11": {
+        "times_studied": 1,
+        "difficulty_ratings": [
+          "easy"
+        ],
+        "last_studied": "2025-05-28"
+      },
+      "7": {
+        "times_studied": 1,
+        "difficulty_ratings": [
+          "easy"
+        ],
+        "last_studied": "2025-05-28"
+      },
+      "3": {
+        "times_studied": 1,
+        "difficulty_ratings": [
+          "easy"
+        ],
+        "last_studied": "2025-05-28"
+      },
+      "8": {
+        "times_studied": 2,
+        "difficulty_ratings": [
+          "easy",
+          "easy"
+        ],
+        "last_studied": "2025-05-28"
+      },
+      "12": {
+        "times_studied": 1,
+        "difficulty_ratings": [
+          "easy"
+        ],
+        "last_studied": "2025-05-28"
+      },
+      "14": {
+        "times_studied": 1,
+        "difficulty_ratings": [
+          "easy"
+        ],
+        "last_studied": "2025-05-28"
+      },
+      "13": {
+        "times_studied": 1,
+        "difficulty_ratings": [
+          "easy"
+        ],
+        "last_studied": "2025-05-28"
+      },
+      "21": {
+        "times_studied": 1,
+        "difficulty_ratings": [
+          "easy"
+        ],
+        "last_studied": "2025-05-28"
+      },
+      "31": {
+        "times_studied": 1,
+        "difficulty_ratings": [
+          "easy"
+        ],
+        "last_studied": "2025-05-28"
+      },
+      "15": {
+        "times_studied": 1,
+        "difficulty_ratings": [
+          "easy"
+        ],
+        "last_studied": "2025-05-28"
+      },
+      "22": {
+        "times_studied": 1,
+        "difficulty_ratings": [
+          "easy"
+        ],
+        "last_studied": "2025-05-28"
+      },
+      "73": {
+        "times_studied": 1,
+        "difficulty_ratings": [
+          "easy"
+        ],
+        "last_studied": "2025-05-28"
+      },
+      "50": {
+        "times_studied": 1,
+        "difficulty_ratings": [
+          "easy"
+        ],
+        "last_studied": "2025-05-28"
+      },
+      "87": {
+        "times_studied": 1,
+        "difficulty_ratings": [
+          "easy"
+        ],
+        "last_studied": "2025-05-28"
+      },
+      "45": {
+        "times_studied": 1,
+        "difficulty_ratings": [
+          "easy"
+        ],
+        "last_studied": "2025-05-28"
+      },
+      "23": {
+        "times_studied": 1,
+        "difficulty_ratings": [
+          "easy"
+        ],
+        "last_studied": "2025-05-28"
+      },
+      "48": {
+        "times_studied": 1,
+        "difficulty_ratings": [
+          "easy"
+        ],
+        "last_studied": "2025-05-28"
+      },
+      "44": {
+        "times_studied": 1,
+        "difficulty_ratings": [
+          "easy"
+        ],
+        "last_studied": "2025-05-28"
+      },
+      "42": {
+        "times_studied": 1,
+        "difficulty_ratings": [
+          "easy"
+        ],
+        "last_studied": "2025-05-28"
+      },
+      "29": {
+        "times_studied": 1,
+        "difficulty_ratings": [
+          "easy"
+        ],
+        "last_studied": "2025-05-28"
+      },
+      "43": {
+        "times_studied": 1,
+        "difficulty_ratings": [
+          "easy"
+        ],
+        "last_studied": "2025-05-28"
+      },
+      "66": {
+        "times_studied": 1,
+        "difficulty_ratings": [
+          "easy"
+        ],
+        "last_studied": "2025-05-28"
+      },
+      "54": {
+        "times_studied": 1,
+        "difficulty_ratings": [
+          "easy"
+        ],
+        "last_studied": "2025-05-28"
+      },
+      "18": {
+        "times_studied": 1,
+        "difficulty_ratings": [
+          "easy"
+        ],
+        "last_studied": "2025-05-29"
+      },
+      "16": {
+        "times_studied": 1,
+        "difficulty_ratings": [
+          "easy"
+        ],
+        "last_studied": "2025-05-29"
+      },
+      "58": {
+        "times_studied": 1,
+        "difficulty_ratings": [
+          "easy"
+        ],
+        "last_studied": "2025-05-29"
+      },
+      "39": {
+        "times_studied": 1,
+        "difficulty_ratings": [
+          "easy"
+        ],
+        "last_studied": "2025-05-29"
+      },
+      "59": {
+        "times_studied": 1,
+        "difficulty_ratings": [
+          "easy"
+        ],
+        "last_studied": "2025-05-29"
+      },
+      "19": {
+        "times_studied": 1,
+        "difficulty_ratings": [
+          "easy"
+        ],
+        "last_studied": "2025-05-29"
+      },
+      "38": {
+        "times_studied": 1,
+        "difficulty_ratings": [
+          "easy"
+        ],
+        "last_studied": "2025-05-29"
       }
     }
   }

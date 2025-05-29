@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session, send_from_directory
 import random  
 import json
 import os
@@ -6,74 +6,75 @@ import markdown
 import datetime
 from datetime import datetime, timedelta
 from functools import wraps
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_change_this_in_production'  # Change this in production!
 
+# Configure for reverse proxy
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
+
 # Configure session
 app.config['SESSION_TYPE'] = 'filesystem'
+app.config['PREFERRED_URL_SCHEME'] = 'https'
 
 # Create templates and static directories if they don't exist
 os.makedirs('templates', exist_ok=True)
 os.makedirs('static', exist_ok=True)
 
-# Sample questions data structure
-QUESTIONS = [
-    {
-        "id": 1,
-        "question": "Which AWS service is primarily used for storing static files?",
-        "options": ["EC2", "S3", "DynamoDB", "RDS"],
-        "correct_answer": "S3",
-        "explanation": "Amazon S3 (Simple Storage Service) is an object storage service that offers industry-leading scalability, data availability, security, and performance for storing static files."
-    },
-    {
-        "id": 2,
-        "question": "Which AWS service would you use to run containers?",
-        "options": ["EC2", "S3", "ECS/EKS", "Lambda"],
-        "correct_answer": "ECS/EKS",
-        "explanation": "Amazon ECS (Elastic Container Service) and EKS (Elastic Kubernetes Service) are services designed specifically for running containers in AWS."
-    }
-]
+# ======================= SIMPLE DATA HELPER =======================
 
-# Save questions to a JSON file if it doesn't exist
-if not os.path.exists('questions.json'):
-    with open('questions.json', 'w') as f:
-        json.dump(QUESTIONS, f)
+class SimpleDataHelper:
+    """One class to handle all JSON file operations"""
+    
+    @staticmethod
+    def load_json(filename, default=None):
+        """Load any JSON file"""
+        try:
+            with open(filename, 'r') as f:
+                return json.load(f)
+        except FileNotFoundError:
+            return default if default is not None else {}
+    
+    @staticmethod
+    def save_json(filename, data):
+        """Save any JSON file"""
+        with open(filename, 'w') as f:
+            json.dump(data, f, indent=2)
 
-# Initialize progress.json if it doesn't exist
-if not os.path.exists('progress.json'):
-    with open('progress.json', 'w') as f:
-        json.dump({}, f)
+# ======================= JSON FILE OPERATIONS =======================
 
-# Initialize flashcard files if they don't exist
-if not os.path.exists('flashcards.json'):
-    with open('flashcards.json', 'w') as f:
-        json.dump([], f)
+def load_questions():
+    return SimpleDataHelper.load_json('questions.json', [])
 
-if not os.path.exists('flashcard_progress.json'):
-    with open('flashcard_progress.json', 'w') as f:
-        json.dump({}, f)
-
-def load_users():
-    """Load users from users.json"""
-    try:
-        with open('users.json', 'r') as f:
-            return json.load(f)
-    except FileNotFoundError:
-        return {}
+def save_questions(questions):
+    SimpleDataHelper.save_json('questions.json', questions)
 
 def load_progress():
-    """Load user progress from progress.json"""
-    try:
-        with open('progress.json', 'r') as f:
-            return json.load(f)
-    except FileNotFoundError:
-        return {}
+    return SimpleDataHelper.load_json('progress.json', {})
 
 def save_progress(progress):
-    """Save user progress to progress.json"""
-    with open('progress.json', 'w') as f:
-        json.dump(progress, f, indent=2)
+    SimpleDataHelper.save_json('progress.json', progress)
+
+def load_users():
+    return SimpleDataHelper.load_json('users.json', {})
+
+def load_flashcards():
+    return SimpleDataHelper.load_json('flashcards.json', [])
+
+def save_flashcards(flashcards):
+    SimpleDataHelper.save_json('flashcards.json', flashcards)
+
+def load_flashcard_progress(username=None):
+    data = SimpleDataHelper.load_json('flashcard_progress.json', {})
+    return data.get(username, {}) if username else data
+
+def save_flashcard_progress_data(username, progress_data):
+    data = SimpleDataHelper.load_json('flashcard_progress.json', {})
+    data[username] = progress_data
+    SimpleDataHelper.save_json('flashcard_progress.json', data)
+
+# ======================= HELPER FUNCTIONS =======================
 
 def login_required(f):
     """Decorator to require login for certain routes"""
@@ -84,14 +85,6 @@ def login_required(f):
             return redirect(url_for('login'))
         return f(*args, **kwargs)
     return decorated_function
-
-def load_questions():
-    with open('questions.json', 'r') as f:
-        return json.load(f)
-
-def save_questions(questions):
-    with open('questions.json', 'w') as f:
-        json.dump(questions, f)
 
 def convert_markdown(text):
     """Convert markdown text to HTML"""
@@ -113,7 +106,7 @@ def save_user_progress(username, question_id, is_correct, score=None):
         'completed': True,
         'correct': is_correct,
         'score': score if score is not None else (1.0 if is_correct else 0.0),
-        'timestamp': str(json.dumps(None))  # You can add proper timestamp if needed
+        'timestamp': datetime.now().isoformat()
     }
     
     save_progress(progress)
@@ -205,21 +198,6 @@ def get_current_question():
     
     return current_question
 
-# ======================= FLASHCARD HELPER FUNCTIONS =======================
-
-def load_flashcards():
-    """Load flashcards from JSON file"""
-    try:
-        with open('flashcards.json', 'r') as f:
-            return json.load(f)
-    except FileNotFoundError:
-        return []
-
-def save_flashcards(flashcards):
-    """Save flashcards to JSON file"""
-    with open('flashcards.json', 'w') as f:
-        json.dump(flashcards, f, indent=2)
-
 def generate_flashcard_id():
     """Generate unique ID for new flashcard"""
     flashcards = load_flashcards()
@@ -235,30 +213,6 @@ def get_flashcard_categories():
         if card.get('category'):
             categories.add(card['category'])
     return sorted(list(categories))
-
-def load_flashcard_progress(username=None):
-    """Load user's flashcard progress"""
-    try:
-        with open('flashcard_progress.json', 'r') as f:
-            data = json.load(f)
-            if username:
-                return data.get(username, {})
-            return data
-    except FileNotFoundError:
-        return {} if username else {}
-
-def save_flashcard_progress_data(username, progress_data):
-    """Save user's flashcard progress"""
-    try:
-        with open('flashcard_progress.json', 'r') as f:
-            data = json.load(f)
-    except FileNotFoundError:
-        data = {}
-    
-    data[username] = progress_data
-    
-    with open('flashcard_progress.json', 'w') as f:
-        json.dump(data, f, indent=2)
 
 def update_flashcard_progress(username, card_id, difficulty):
     """Update progress for a specific flashcard"""
@@ -293,7 +247,6 @@ def update_flashcard_progress(username, card_id, difficulty):
         progress['studied_today'].append(card_id)
     
     save_flashcard_progress_data(username, progress)
-    
 
 def get_flashcard_stats(username):
     """Get comprehensive flashcard statistics for user"""
@@ -403,6 +356,42 @@ def clear_study_session(username):
     progress = load_flashcard_progress(username)
     progress['studied_today'] = []
     save_flashcard_progress_data(username, progress)
+
+# ======================= INITIALIZE DATA FILES =======================
+
+# Sample questions data structure
+QUESTIONS = [
+    {
+        "id": 1,
+        "question": "Which AWS service is primarily used for storing static files?",
+        "options": ["EC2", "S3", "DynamoDB", "RDS"],
+        "correct_answer": "S3",
+        "explanation": "Amazon S3 (Simple Storage Service) is an object storage service that offers industry-leading scalability, data availability, security, and performance for storing static files."
+    },
+    {
+        "id": 2,
+        "question": "Which AWS service would you use to run containers?",
+        "options": ["EC2", "S3", "ECS/EKS", "Lambda"],
+        "correct_answer": "ECS/EKS",
+        "explanation": "Amazon ECS (Elastic Container Service) and EKS (Elastic Kubernetes Service) are services designed specifically for running containers in AWS."
+    }
+]
+
+# Initialize all JSON files if they don't exist
+if not os.path.exists('questions.json'):
+    SimpleDataHelper.save_json('questions.json', QUESTIONS)
+
+if not os.path.exists('progress.json'):
+    SimpleDataHelper.save_json('progress.json', {})
+
+if not os.path.exists('flashcards.json'):
+    SimpleDataHelper.save_json('flashcards.json', [])
+
+if not os.path.exists('flashcard_progress.json'):
+    SimpleDataHelper.save_json('flashcard_progress.json', {})
+
+if not os.path.exists('users.json'):
+    SimpleDataHelper.save_json('users.json', {"admin": "password"})  # Default user
 
 # ======================= AUTHENTICATION ROUTES =======================
 
@@ -938,6 +927,11 @@ def start_study_session():
 
 # ======================= UTILITY ROUTES =======================
 
+@app.route('/static/<path:filename>')
+def static_files(filename):
+    """Serve static files directly"""
+    return send_from_directory('static', filename)
+
 @app.route('/markdown_preview', methods=['POST'])
 @login_required
 def markdown_preview():
@@ -947,4 +941,4 @@ def markdown_preview():
     return html
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5019, debug=True)
+    app.run(host="0.0.0.0", port=5019, debug=False)  # Set debug=False for production
