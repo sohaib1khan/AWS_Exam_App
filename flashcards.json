@@ -978,5 +978,612 @@
     "tags": [],
     "created_date": "2025-05-28T19:37:00.000000",
     "created_by": "admin"
+  },
+  {
+    "id": 111,
+    "front": "AWS SQS long polling allows the SQS service to wait until a message is available in the queue before sending a response?",
+    "back": "True! ",
+    "category": "Security Difficulty: Medium Tags: iam, roles, users, security, credentials, permissions",
+    "tags": [],
+    "created_date": "2025-05-29T17:48:27.652050",
+    "difficulty": "medium",
+    "times_studied": 0,
+    "last_studied": null
+  },
+  {
+    "id": 112,
+    "front": "A visibility timeout is a period of time during which AWS SQS prevents other consuming components from receiving and processing the message?",
+    "back": "True!",
+    "category": "",
+    "tags": [],
+    "created_date": "2025-05-29T17:49:15.613750",
+    "difficulty": "medium",
+    "times_studied": 0,
+    "last_studied": null
+  },
+  {
+    "id": 113,
+    "front": "What AWS service can you use to \"fan out\" SQS messages to multiple queues?",
+    "back": "SNS",
+    "category": "",
+    "tags": [],
+    "created_date": "2025-05-29T17:49:50.351050",
+    "difficulty": "medium",
+    "times_studied": 0,
+    "last_studied": null
+  },
+  {
+    "id": 114,
+    "front": "(SQS) What is the maximum long poll timeout?",
+    "back": "20 seconds",
+    "category": "",
+    "tags": [],
+    "created_date": "2025-05-29T17:50:21.290607",
+    "difficulty": "medium",
+    "times_studied": 0,
+    "last_studied": null
+  },
+  {
+    "id": 115,
+    "front": "You have a fleet of EC2 instances that are constantly polling empty SQS queues which is burning CPU complete cycles. What should you do?",
+    "back": "Enable SQS long polling",
+    "category": "",
+    "tags": [],
+    "created_date": "2025-05-29T17:50:57.209076",
+    "difficulty": "medium",
+    "times_studied": 0,
+    "last_studied": null
+  },
+  {
+    "id": 116,
+    "front": "What is the default SQS visibility time out?",
+    "back": "30 seconds",
+    "category": "",
+    "tags": [],
+    "created_date": "2025-05-29T17:51:30.382430",
+    "difficulty": "medium",
+    "times_studied": 0,
+    "last_studied": null
+  },
+{
+  "id": 117,
+  "front": "EC2 instances download jobs from SQS queue, but are taking too long to process. What api call can you use to the length of time to process jobs?",
+  "back": "ChangeMessageVisibility",
+  "category": "",
+  "tags": [],
+  "created_date": "2025-05-29T17:51:55.865224",
+  "difficulty": "medium",
+  "times_studied": 0,
+  "last_studied": null
+},
+{
+  "id": 118,
+    "front": "What is AWS Lambda SnapStart and how does it reduce cold starts?",
+    "back": "SnapStart is a performance optimization for Java Lambda functions that takes a snapshot of the initialized execution environment and restores it for new invocations. It can reduce startup duration from several seconds to sub-second with minimal code changes. Available for Java runtimes only.",
+    "category": "Compute",
+    "difficulty": "hard",
+    "tags": [],
+    "created_date": "2025-05-29T19:00:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 119,
+    "front": "What are the main factors that influence Lambda cold start duration?",
+    "back": "1. Runtime language (Python/Node.js fastest, Java/C# slower), 2. Package size and dependencies, 3. Memory allocation, 4. VPC configuration, 5. Container vs ZIP packaging, 6. Initialization code complexity, 7. Number of imported libraries",
+    "category": "Compute",
+    "difficulty": "hard",
+    "tags": [],
+    "created_date": "2025-05-29T19:01:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 120,
+    "front": "What are the best practices to minimize Lambda cold starts?",
+    "back": "1. Use Provisioned Concurrency for critical functions, 2. Optimize package size, 3. Minimize dependencies, 4. Use container images for >250MB packages, 5. Avoid VPC when possible, 6. Keep initialization code lightweight, 7. Use connection pooling, 8. Choose appropriate memory allocation",
+    "category": "Optimization",
+    "difficulty": "hard",
+    "tags": [],
+    "created_date": "2025-05-29T19:02:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 121,
+    "front": "How do you calculate DynamoDB Read Capacity Units (RCU)?",
+    "back": "1 RCU = 1 strongly consistent read per second for items up to 4KB. Eventually consistent reads: 1 RCU = 2 reads per second up to 4KB. Transactional reads: 2 RCUs = 1 read per second up to 4KB. For larger items: RCU = ceil(item_size_KB / 4) × consistency_multiplier",
+    "category": "Database",
+    "difficulty": "hard",
+    "tags": [],
+    "created_date": "2025-05-29T19:03:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 122,
+    "front": "How do you calculate DynamoDB Write Capacity Units (WCU)?",
+    "back": "1 WCU = 1 write per second for items up to 1KB. Transactional writes: 2 WCUs = 1 write per second up to 1KB. For larger items: WCU = ceil(item_size_KB / 1) × transaction_multiplier. Item size is rounded up to the nearest KB.",
+    "category": "Database",
+    "difficulty": "hard",
+    "tags": [],
+    "created_date": "2025-05-29T19:04:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 123,
+    "front": "What's the difference between DynamoDB Provisioned and On-Demand capacity modes?",
+    "back": "Provisioned: You specify RCU/WCU, predictable costs, auto-scaling available, good for steady workloads. On-Demand: Pay-per-request, automatic scaling, no capacity planning, good for unpredictable workloads. On-demand costs more per request but no baseline charges.",
+    "category": "Database",
+    "difficulty": "medium",
+    "tags": [],
+    "created_date": "2025-05-29T19:05:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 124,
+    "front": "What are DynamoDB On-Demand mode limits and throttling conditions?",
+    "back": "Table-level limit: 40,000 RCU and 40,000 WCU (adjustable via support). No account-level limits. Throttling occurs if: 1) Traffic exceeds 2x previous peak within 30 minutes, 2) Hot partitions (>3000 RCU per partition), 3) Uneven key distribution",
+    "category": "Database",
+    "difficulty": "hard",
+    "tags": [],
+    "created_date": "2025-05-29T19:06:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 125,
+    "front": "What is AWS CodeBuild and what does buildspec.yml contain?",
+    "back": "CodeBuild is a fully managed build service. buildspec.yml defines build instructions with phases: install (runtime versions), pre_build (commands before build), build (main build commands), post_build (commands after build), artifacts (output files), and optional cache settings.",
+    "category": "Developer Tools",
+    "difficulty": "medium",
+    "tags": [],
+    "created_date": "2025-05-29T19:07:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 126,
+    "front": "What are the phases in a CodeBuild buildspec.yml file?",
+    "back": "1. version: buildspec version (0.2), 2. phases: install, pre_build, build, post_build, 3. artifacts: files to include in build output, 4. cache: dependencies to cache, 5. environment: environment variables. Each phase contains commands array with shell commands.",
+    "category": "Developer Tools",
+    "difficulty": "medium",
+    "tags": [],
+    "created_date": "2025-05-29T19:08:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 127,
+    "front": "What is AWS Lambda INIT billing and when does it occur?",
+    "back": "Starting August 1, 2025, AWS charges for INIT phase (up to 10 seconds). INIT occurs during cold starts when: 1) New execution environment created, 2) Function scales up, 3) Code/configuration changes. INIT runs only once per environment, not per invocation.",
+    "category": "Compute",
+    "difficulty": "hard",
+    "tags": [],
+    "created_date": "2025-05-29T19:09:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 128,
+    "front": "What optimization techniques can reduce Lambda INIT phase duration?",
+    "back": "1. Reduce package size using bundlers like esbuild, 2. Minimize dependencies, 3. Use Lambda layers for shared code, 4. Optimize initialization code, 5. Pre-calculate lookup tables during INIT, 6. Use container images for better dependency management, 7. Avoid heavy initialization in handler",
+    "category": "Optimization",
+    "difficulty": "hard",
+    "tags": [],
+    "created_date": "2025-05-29T19:10:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 129,
+    "front": "What are container image advantages for Lambda functions?",
+    "back": "1. Larger deployment packages (up to 10GB vs 250MB ZIP), 2. Familiar Docker tooling, 3. Easier local testing, 4. Support for any runtime, 5. Better dependency management, 6. Consistent environments, 7. Potentially shorter cold starts for large packages",
+    "category": "Compute",
+    "difficulty": "medium",
+    "tags": [],
+    "created_date": "2025-05-29T19:11:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 130,
+    "front": "What are best practices for Lambda container image optimization?",
+    "back": "1. Use AWS-provided base images (cached by Lambda service), 2. Put frequently changing code layers last in Dockerfile, 3. Minimize layer count, 4. Use multi-stage builds, 5. Don't include unnecessary dependencies, 6. Optimize layer caching order",
+    "category": "Optimization",
+    "difficulty": "hard",
+    "tags": [],
+    "created_date": "2025-05-29T19:12:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 131,
+    "front": "What happens when Lambda function exceeds provisioned concurrency?",
+    "back": "When all provisioned concurrent executions are in use, additional invocations are served by standard on-demand execution environments, which may experience cold starts. The function continues to work but with potential latency increase for excess traffic.",
+    "category": "Compute",
+    "difficulty": "hard",
+    "tags": [],
+    "created_date": "2025-05-29T19:13:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 132,
+    "front": "What is the difference between Lambda function warmers and Provisioned Concurrency?",
+    "back": "Function warmers: Custom solution using scheduled events (EventBridge/CloudWatch), less reliable, cheaper. Provisioned Concurrency: AWS-managed feature, guaranteed warm environments, more reliable, costs ~60% of normal Lambda pricing even when not used.",
+    "category": "Compute",
+    "difficulty": "hard",
+    "tags": [],
+    "created_date": "2025-05-29T19:14:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 133,
+    "front": "What are the DynamoDB burst capacity and adaptive capacity features?",
+    "back": "Burst capacity: Provides temporary ability to consume unused capacity from other partitions. Adaptive capacity: Automatically redistributes throughput to handle uneven access patterns (hot partitions) without throttling, runs indefinitely for imbalanced workloads.",
+    "category": "Database",
+    "difficulty": "hard",
+    "tags": [],
+    "created_date": "2025-05-29T19:15:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 134,
+    "front": "How do you optimize DynamoDB for better performance?",
+    "back": "1. Use high-cardinality partition keys, 2. Avoid hot partitions with random suffixes, 3. Use sparse indexes, 4. Implement batch operations, 5. Use eventually consistent reads when possible, 6. Choose appropriate item sizes, 7. Monitor CloudWatch metrics, 8. Use DAX for microsecond latency",
+    "category": "Optimization",
+    "difficulty": "hard",
+    "tags": [],
+    "created_date": "2025-05-29T19:16:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 135,
+    "front": "What causes DynamoDB ProvisionedThroughputExceededException?",
+    "back": "1. Requests exceed provisioned RCU/WCU, 2. Hot partitions consuming more than partition's share, 3. Insufficient burst capacity, 4. Large items consuming multiple capacity units, 5. GSI throttling affecting main table, 6. Aggressive retry policies causing more load",
+    "category": "Troubleshooting",
+    "difficulty": "hard",
+    "tags": [],
+    "created_date": "2025-05-29T19:17:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 136,
+    "front": "What is VPC's impact on Lambda cold start performance?",
+    "back": "Previously, VPC-connected Lambda functions had significantly longer cold starts due to ENI creation. AWS improved this - now VPC impact is minimal (< 100ms additional). However, avoid VPC connections when private resources aren't needed to minimize complexity.",
+    "category": "Networking",
+    "difficulty": "medium",
+    "tags": [],
+    "created_date": "2025-05-29T19:18:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 137,
+    "front": "What are the CodePipeline artifact storage and retention policies?",
+    "back": "Artifacts stored in S3 bucket, retention configurable (default 30 days for builds). Pipeline artifacts automatically encrypted. Source artifacts (from CodeCommit, GitHub, S3) and output artifacts (from CodeBuild, CodeDeploy) flow through stages. Can configure artifact encryption with KMS.",
+    "category": "Developer Tools",
+    "difficulty": "medium",
+    "tags": [],
+    "created_date": "2025-05-29T19:19:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 138,
+    "front": "What are CodeBuild environment types and their use cases?",
+    "back": "Linux containers (most common, various compute types), Windows containers (for .NET/Windows apps), ARM-based (cost-effective for compatible workloads). Compute types: small (3GB RAM), medium (7GB RAM), large (15GB RAM), 2xlarge (144GB RAM). Choose based on build requirements.",
+    "category": "Developer Tools",
+    "difficulty": "medium",
+    "tags": [],
+    "created_date": "2025-05-29T19:20:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 139,
+    "front": "What are CodeDeploy deployment configurations for Lambda?",
+    "back": "Canary10Percent30Minutes: 10% traffic shifted immediately, remaining after 30 min. Canary10Percent5Minutes: 10% shifted, remaining after 5 min. Linear10PercentEvery10Minutes: 10% every 10 minutes. AllAtOnce: Immediate shift to new version. Custom configurations possible.",
+    "category": "Developer Tools",
+    "difficulty": "hard",
+    "tags": [],
+    "created_date": "2025-05-29T19:21:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 140,
+    "front": "What is the difference between CodeDeploy and CodePipeline?",
+    "back": "CodeDeploy: Deployment service that automates application deployments to EC2, Lambda, ECS, on-premises. Handles rollbacks, health checks. CodePipeline: Orchestration service that connects source, build, test, and deploy stages. CodeDeploy is often used as a deploy stage within CodePipeline.",
+    "category": "Developer Tools",
+    "difficulty": "medium",
+    "tags": [],
+    "created_date": "2025-05-29T19:22:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 141,
+    "front": "What are the CloudWatch Logs Insights query capabilities?",
+    "back": "SQL-like query language for analyzing log data. Can: filter by time range, search text patterns, aggregate data, create visualizations, parse JSON logs, calculate statistics. Queries run against log groups and can span multiple log streams. Useful for debugging and monitoring.",
+    "category": "Monitoring",
+    "difficulty": "medium",
+    "tags": [],
+    "created_date": "2025-05-29T19:23:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 142,
+    "front": "What are CloudWatch custom metrics namespaces and dimensions?",
+    "back": "Namespaces: Categorize metrics (e.g., AWS/Lambda, Custom/Application). Dimensions: Key-value pairs for filtering (e.g., InstanceId, FunctionName). Up to 10 dimensions per metric. Use consistent naming conventions. Dimensions create separate metric streams.",
+    "category": "Monitoring",
+    "difficulty": "medium",
+    "tags": [],
+    "created_date": "2025-05-29T19:24:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 143,
+    "front": "What is the difference between CloudWatch Events and EventBridge?",
+    "back": "EventBridge is the evolution of CloudWatch Events with additional features: custom event buses, schema registry, SaaS integration, event replay, archive. CloudWatch Events is now legacy but still works. Use EventBridge for new applications.",
+    "category": "Application Integration",
+    "difficulty": "medium",
+    "tags": [],
+    "created_date": "2025-05-29T19:25:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 144,
+    "front": "What are SQS message visibility timeout best practices?",
+    "back": "Set visibility timeout longer than function execution time to prevent duplicate processing. Use ChangeMessageVisibility API to extend processing time. Default is 30 seconds, max is 12 hours. Too short causes duplicate processing, too long delays retry of failed messages.",
+    "category": "Application Integration",
+    "difficulty": "medium",
+    "tags": [],
+    "created_date": "2025-05-29T19:26:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 145,
+    "front": "What is SQS long polling and how does it reduce costs?",
+    "back": "Long polling waits up to 20 seconds for messages before returning empty response. Reduces API calls (costs), eliminates empty receives, reduces latency for message delivery. Configure using ReceiveMessageWaitTimeSeconds. More efficient than short polling.",
+    "category": "Application Integration",
+    "difficulty": "medium",
+    "tags": [],
+    "created_date": "2025-05-29T19:27:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 146,
+    "front": "What are S3 Transfer Acceleration use cases and limitations?",
+    "back": "Use cases: Global file uploads, large file transfers, users far from S3 region. Uses CloudFront edge locations to optimize transfer path. Limitations: Additional cost, only works for PUT and multipart uploads, not effective for same-region transfers. May not always be faster.",
+    "category": "Storage",
+    "difficulty": "medium",
+    "tags": [],
+    "created_date": "2025-05-29T19:28:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 147,
+    "front": "What is S3 Cross-Region Replication (CRR) vs Same-Region Replication (SRR)?",
+    "back": "CRR: Replicates objects to different AWS region, compliance/latency requirements. SRR: Replicates within same region, different accounts/storage classes. Both require versioning enabled, can change storage class, ownership, encryption during replication.",
+    "category": "Storage",
+    "difficulty": "medium",
+    "tags": [],
+    "created_date": "2025-05-29T19:29:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 148,
+    "front": "What are API Gateway usage plans and API keys?",
+    "back": "Usage plans: Define throttling limits and quotas for API access. API keys: Identify clients and track usage. Usage plans can include multiple API keys and stages. Configure throttling (requests per second) and quota (requests per time period). Useful for monetization and rate limiting.",
+    "category": "Networking",
+    "difficulty": "hard",
+    "tags": [],
+    "created_date": "2025-05-29T19:30:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 149,
+    "front": "What is API Gateway request/response transformation?",
+    "back": "Use mapping templates with VTL (Velocity Template Language) to transform requests/responses. Can modify headers, query parameters, request body. Useful for legacy system integration, data format conversion, adding/removing fields. Configure in Integration Request/Response sections.",
+    "category": "Networking",
+    "difficulty": "hard",
+    "tags": [],
+    "created_date": "2025-05-29T19:31:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 150,
+    "front": "What are API Gateway stage variables and their use cases?",
+    "back": "Stage variables: Key-value pairs associated with deployment stages. Use cases: Environment-specific configurations, different Lambda function versions per stage, different endpoint URLs, feature flags. Referenced in mapping templates, authorizers, and integration configurations.",
+    "category": "Networking",
+    "difficulty": "medium",
+    "tags": [],
+    "created_date": "2025-05-29T19:32:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 151,
+    "front": "What are CloudFront signed URLs vs signed cookies?",
+    "back": "Signed URLs: Control access to individual files, URL contains authentication info. Signed cookies: Control access to multiple files, authentication in cookie header. Use signed URLs for single file access, signed cookies for multiple file access or when URLs can't be changed.",
+    "category": "Networking",
+    "difficulty": "hard",
+    "tags": [],
+    "created_date": "2025-05-29T19:33:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 152,
+    "front": "What is CloudFront Origin Access Control (OAC) vs Origin Access Identity (OAI)?",
+    "back": "OAC: Newer, supports all S3 features including SSE-KMS, SSE-C, cross-region replication. OAI: Legacy, limited S3 support. OAC provides better security and functionality. Use OAC for new implementations, migrate from OAI to OAC when possible.",
+    "category": "Networking",
+    "difficulty": "hard",
+    "tags": [],
+    "created_date": "2025-05-29T19:34:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 153,
+    "front": "What are Cognito User Pool vs Identity Pool use cases?",
+    "back": "User Pools: Authentication (sign-up, sign-in, user management), JWT tokens, social/SAML federation. Identity Pools: Authorization (AWS credentials for authenticated/unauthenticated users), mobile/web app access to AWS services. Often used together for complete auth solution.",
+    "category": "Security",
+    "difficulty": "medium",
+    "tags": [],
+    "created_date": "2025-05-29T19:35:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 154,
+    "front": "What are Cognito User Pool triggers and their use cases?",
+    "back": "Lambda triggers: Pre-authentication, post-authentication, pre-signup, post-confirmation, custom message, migrate user. Use cases: Custom validation, user migration, welcome emails, custom auth flows, adding user attributes, third-party integrations.",
+    "category": "Security",
+    "difficulty": "hard",
+    "tags": [],
+    "created_date": "2025-05-29T19:36:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 155,
+    "front": "What is the difference between KMS envelope encryption and client-side encryption?",
+    "back": "Envelope encryption: KMS encrypts data encryption keys (DEKs), DEKs encrypt actual data. Reduces network load, supports large data. Client-side encryption: Encrypt data before sending to AWS, you manage encryption keys. More control but more complexity.",
+    "category": "Security",
+    "difficulty": "hard",
+    "tags": [],
+    "created_date": "2025-05-29T19:37:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 156,
+    "front": "What are AWS Systems Manager Parameter Store hierarchical parameters?",
+    "back": "Organize parameters using path hierarchy (e.g., /myapp/dev/db/password). Supports up to 15 levels deep. Can retrieve by path with GetParametersByPath API. Useful for environment-specific configurations, application settings, feature flags. Supports parameter policies for expiration.",
+    "category": "Security",
+    "difficulty": "medium",
+    "tags": [],
+    "created_date": "2025-05-29T19:38:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 157,
+    "front": "What are the different types of Elastic Load Balancers and their use cases?",
+    "back": "ALB (Application): Layer 7, HTTP/HTTPS, advanced routing, WebSocket support. NLB (Network): Layer 4, TCP/UDP, ultra-high performance, static IPs. GLB (Gateway): Layer 3, traffic distribution to virtual appliances. CLB (Classic): Legacy, not recommended for new applications.",
+    "category": "Networking",
+    "difficulty": "medium",
+    "tags": [],
+    "created_date": "2025-05-29T19:39:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 158,
+    "front": "What are ALB listener rules and their conditions?",
+    "back": "Conditions: host-header, path-pattern, http-header, http-request-method, query-string, source-ip. Actions: forward, redirect, fixed-response, authenticate-oidc, authenticate-cognito. Rules processed in priority order. Default rule catches all unmatched requests.",
+    "category": "Networking",
+    "difficulty": "hard",
+    "tags": [],
+    "created_date": "2025-05-29T19:40:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 159,
+    "front": "What is ECS task definition and its key components?",
+    "back": "JSON template defining containers in task. Components: family name, task role ARN, network mode, CPU/memory requirements, container definitions (image, ports, environment variables), logging configuration, volume definitions. Required for ECS service creation.",
+    "category": "Containers",
+    "difficulty": "medium",
+    "tags": [],
+    "created_date": "2025-05-29T19:41:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 160,
+    "front": "What is the difference between ECS task role and execution role?",
+    "back": "Task role: Permissions for containers to access AWS services during runtime. Execution role: Permissions for ECS agent to pull container images, write logs, retrieve secrets. Task role is used by application, execution role is used by ECS infrastructure.",
+    "category": "Containers",
+    "difficulty": "medium",
+    "tags": [],
+    "created_date": "2025-05-29T19:42:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 161,
+    "front": "What are Step Functions service integrations and their patterns?",
+    "back": "Service integrations: Direct AWS service calls from state machine. Patterns: Request-response (synchronous), Run a job (.sync), Wait for callback (.waitForTaskToken). Supports 200+ AWS services including Lambda, ECS, Batch, SNS, SQS, DynamoDB.",
+    "category": "Application Integration",
+    "difficulty": "hard",
+    "tags": [],
+    "created_date": "2025-05-29T19:43:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 162,
+    "front": "What is the difference between Step Functions Express and Standard workflows?",
+    "back": "Express: High-volume, short-duration (<5 min), at-least-once execution, limited history, cheaper. Standard: Long-running (<1 year), exactly-once execution, full execution history, visual debugging, supports all features. Choose based on duration and volume requirements.",
+    "category": "Application Integration",
+    "difficulty": "hard",
+    "tags": [],
+    "created_date": "2025-05-29T19:44:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 163,
+    "front": "What are Kinesis Data Streams shard scaling considerations?",
+    "back": "Each shard: 1000 records/sec or 1MB/sec ingestion, 2MB/sec or 5 transactions/sec for reads. Scale out: Split shards to increase capacity. Scale in: Merge shards to reduce costs. Resharding affects downstream consumers. Consider partition key distribution for even shard utilization.",
+    "category": "Analytics",
+    "difficulty": "hard",
+    "tags": [],
+    "created_date": "2025-05-29T19:45:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 164,
+    "front": "What is Kinesis Data Firehose error handling and data transformation?",
+    "back": "Error handling: Failed records sent to error output bucket, configurable retry duration. Data transformation: Lambda functions for data conversion, format transformation, enrichment. Supports compression (GZIP, ZIP, Snappy) and format conversion (Parquet, ORC).",
+    "category": "Analytics",
+    "difficulty": "hard",
+    "tags": [],
+    "created_date": "2025-05-29T19:46:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 165,
+    "front": "What are the common patterns for Lambda error handling and retries?",
+    "back": "1. Try/catch blocks in code, 2. Dead letter queues for failed async invocations, 3. Exponential backoff with jitter, 4. Circuit breaker pattern, 5. Retry configuration for event sources, 6. CloudWatch alarms for error monitoring, 7. X-Ray for distributed tracing",
+    "category": "Troubleshooting",
+    "difficulty": "hard",
+    "tags": [],
+    "created_date": "2025-05-29T19:47:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 166,
+    "front": "What are the best practices for Lambda function configuration?",
+    "back": "1. Right-size memory allocation using Power Tuning, 2. Set appropriate timeout values, 3. Use environment variables for configuration, 4. Enable X-Ray tracing for debugging, 5. Configure proper IAM roles, 6. Use layers for shared dependencies, 7. Monitor CloudWatch metrics",
+    "category": "Best Practices",
+    "difficulty": "medium",
+    "tags": [],
+    "created_date": "2025-05-29T19:48:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 167,
+    "front": "What are common API Gateway error codes and their meanings?",
+    "back": "400 Bad Request: Invalid request syntax. 401 Unauthorized: Authentication required. 403 Forbidden: Insufficient permissions. 429 Too Many Requests: Rate limit exceeded. 500 Internal Server Error: Backend failure. 502 Bad Gateway: Invalid response from backend. 504 Gateway Timeout: Backend timeout.",
+    "category": "Troubleshooting",
+    "difficulty": "medium",
+    "tags": [],
+    "created_date": "2025-05-29T19:49:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 168,
+    "front": "What is SAM CLI and its main commands?",
+    "back": "SAM CLI: Tool for building, testing, and deploying serverless applications. Commands: 'sam init' (create project), 'sam build' (prepare for deployment), 'sam deploy' (deploy to AWS), 'sam local start-api' (test locally), 'sam logs' (fetch logs), 'sam validate' (validate template).",
+    "category": "Developer Tools",
+    "difficulty": "medium",
+    "tags": [],
+    "created_date": "2025-05-29T19:50:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 169,
+    "front": "What are the advantages of using AWS SAM over raw CloudFormation?",
+    "back": "1. Simplified syntax for serverless resources, 2. Built-in best practices, 3. Local testing capabilities, 4. Automatic IAM role creation, 5. Easy API Gateway integration, 6. Gradual deployment support, 7. Template validation, 8. Integration with development tools",
+    "category": "Developer Tools",
+    "difficulty": "medium",
+    "tags": [],
+    "created_date": "2025-05-29T19:51:00.000000",
+    "created_by": "admin"
+  },
+  {
+    "id": 170,
+    "front": "What is AWS CDK and how does it differ from CloudFormation?",
+    "back": "CDK: Define infrastructure using programming languages (TypeScript, Python, Java, C#), generates CloudFormation. Advantages: IDE support, code reuse, loops/conditions, higher-level constructs. CloudFormation: JSON/YAML templates, declarative, AWS-native. CDK compiles to CloudFormation templates.",
+    "category": "DevOps",
+    "difficulty": "medium",
+    "tags": [],
+    "created_date": "2025-05-29T19:52:00.000000",
+    "created_by": "admin"
   }
 ]
